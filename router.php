@@ -16,6 +16,12 @@ function renderWithSSI(string $filePath): void {
     }, $content);
 }
 
+if ($uri === '/favicon.ico') {
+    header('Content-Type: image/x-icon');
+    readfile(__DIR__ . '/assets/favicon/favicon.ico');
+    exit;
+}
+
 // 1. Serve actual physical static files (CSS, JS, images, fonts, JSON, SHTML)
 if ($uri !== '/' && file_exists(__DIR__ . $uri) && !is_dir(__DIR__ . $uri)) {
     if (preg_match('~\.(shtml|html)$~i', $uri)) {

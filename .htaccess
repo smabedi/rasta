@@ -13,6 +13,9 @@ ErrorDocument 500 /500.shtml
     SetOutputFilter INCLUDES
 </FilesMatch>
 
+# Favicon Fallback for pages without explicit HTML link tags
+RewriteRule ^favicon\.ico$ assets/favicon/favicon.ico [L]
+
 RewriteEngine On
 
 # 1. SECURITY: Force HTTPS
