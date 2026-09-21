@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="سامانه الگوریتمی و هوشمند اولویت‌بندی رشته‌های دانشگاهی کنکور سراسری بدون ترکیب‌های ناموجود.">
+    <meta property="og:title" content="رستا | سامانه هوشمند انتخاب رشته کنکور">
+    <meta property="og:description" content="انتخاب رشته کنکور سراسری، دقیق‌تر و بدون خطای انسانی با ماتریس اعتبارسنجی رشته-دانشگاه.">
+    <meta property="og:url" content="https://rasta.smabedi.ir">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#2563eb">
+    <title>رستا | سامانه هوشمند انتخاب رشته</title>
+    <link rel="icon" type="image/png" href="/assets/favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon/favicon.svg" />
+    <link rel="shortcut icon" href="/assets/favicon/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="Rasta" />
+    <link rel="manifest" href="/assets/favicon/site.webmanifest" />
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/pages/landing.css">
+
+</head>
+<body>
+<div class="landing-page-shell">
+    <!-- Ambient Mesh Background -->
+    <div class="ambient-glow glow-top"></div>
+    <div class="ambient-glow glow-bottom"></div>
+
+    <!-- 1. Full-Bleed Navigation Bar -->
+    <!--#include virtual="/includes/header.html" -->
+
+    <!-- 2. Hero Presentation -->
+    <main class="hero-container">
+        <div class="hero-badge">
+            <span class="pulse-dot"></span>
+            <span>سامانه تحلیل و اولویت‌بندی اختصاصی کنکور سراسری</span>
+        </div>
+
+        <h1 class="hero-title">
+            انتخاب رشته ولی
+            <span id="rotator-container" class="rotator-wrapper">
+                <span class="word-stage">
+                    <span id="dynamic-word" class="rotating-word">سنجیده‌تر</span>
+                </span>
+            </span>
+        </h1>
+
+        <p class="hero-desc">
+            رستا ترکیب‌های غیرمجاز و ناموجود دانشگاه‌ها را فیلتر کرده و بر اساس علایق، تراز کارنامه و موقعیت جغرافیایی، فهرست ۱۵۰ انتخابی شما را بهینه‌سازی می‌کند.
+        </p>
+
+        <div class="hero-actions">
+            <a href="/management/major-matrix/" class="btn-hero-primary">
+                <span>ورود به سامانه رستا</span>
+                <!-- Razor-sharp inline vector arrow (No cheap Unicode glyphs) -->
+                <svg class="btn-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+            </a>
+            <div class="hero-status-pill">
+                <span class="status-indicator-dot"></span>
+                آماده اعتبارسنجی رشته‌های ریاضی، تجربی و انسانی
+            </div>
+        </div>
+
+        <!-- Key Metric Counters -->
+        <div class="stats-strip">
+            <div class="stat-item">
+                <span class="stat-number">۳</span>
+                <span class="stat-label">گروه آزمایشی جامع</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-number">۱۵۰</span>
+                <span class="stat-label">اولویت‌بندی خودکار انتخاب‌ها</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-number">۰</span>
+                <span class="stat-label">ترکیب نامجاز در خروجی</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- 3. Full-Bleed Modern Footer -->
+    <!--#include virtual="/includes/footer.html" -->
+</div>
+
+<!-- Layout-Stable Dynamic Word Engine with Locked Anchor (Zero Re-Centering Shift) -->
+<script>
+    document.addEventListener('DOMContentLoaded', async () => {
+        const words = [
+            'سنجیده‌تر',
+            'آگاهانه‌تر',
+            'دقیق‌تر',
+            'هوشمندانه‌تر',
+            'علمی‌تر',
+            'هدفمندتر',
+            'شفاف‌تر'
+        ];
+
+        const wordEl = document.getElementById('dynamic-word');
+        const container = document.getElementById('rotator-container');
+        let index = 0;
+
+        if (document.fonts && document.fonts.ready) {
+            await document.fonts.ready;
+        }
+
+        const computeDimensions = () => {
+            const ruler = document.createElement('span');
+            ruler.style.visibility = 'hidden';
+            ruler.style.position = 'absolute';
+            ruler.style.whiteSpace = 'nowrap';
+            ruler.style.fontFamily = 'Vazirmatn, sans-serif';
+            ruler.style.fontSize = window.getComputedStyle(wordEl).fontSize;
+            ruler.style.fontWeight = '900';
+            ruler.style.letterSpacing = 'normal';
+            document.body.appendChild(ruler);
+
+            let maxCalculatedWidth = 0;
+            words.forEach(w => {
+                ruler.textContent = w;
+                const wWidth = ruler.getBoundingClientRect().width;
+                if (wWidth > maxCalculatedWidth) {
+                    maxCalculatedWidth = wWidth;
+                }
+            });
+            document.body.removeChild(ruler);
+
+            // Lock container to the widest candidate (+14px safety buffer ensures wide swashes never clip)
+            container.style.width = `${Math.ceil(maxCalculatedWidth) + 14}px`;
+        };
+
+        computeDimensions();
+        window.addEventListener('resize', computeDimensions);
+
+        setInterval(() => {
+            wordEl.classList.remove('anim-enter');
+            wordEl.classList.add('anim-exit');
+
+            setTimeout(() => {
+                index = (index + 1) % words.length;
+                wordEl.textContent = words[index];
+                wordEl.classList.remove('anim-exit');
+                wordEl.classList.add('anim-enter');
+            }, 250);
+        }, 2000);
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+[
+  { "id": "law", "name": "حقوق" },
+  { "id": "psychology", "name": "روان‌شناسی" },
+  { "id": "management", "name": "مدیریت" },
+  { "id": "economics", "name": "علوم اقتصادی" },
+  { "id": "accounting", "name": "حسابداری" },
+  { "id": "polisci", "name": "علوم سیاسی" },
+  { "id": "sociology", "name": "جامعه‌شناسی" },
+  { "id": "literature", "name": "زبان و ادبیات فارسی" }
+]

@@ -1,0 +1,59 @@
+DirectoryIndex index.html index.php
+
+# Custom Error Pages (DirectAdmin Native SSI Views)
+ErrorDocument 400 /400.shtml
+ErrorDocument 401 /401.shtml
+ErrorDocument 403 /403.shtml
+ErrorDocument 404 /404.shtml
+ErrorDocument 500 /500.shtml
+
+# SSI Configuration for HTML and SHTML
+<FilesMatch "\.(html|shtml)$">
+    Options +Includes
+    SetOutputFilter INCLUDES
+</FilesMatch>
+
+RewriteEngine On
+
+# 1. SECURITY: Force HTTPS
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# 2. SECURITY: Prevent Directory Browsing
+Options -Indexes
+
+# 3. SECURITY: Protect System & Data Files
+<FilesMatch "^\.|\.(env|log|md|iml)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# 4. SECIRUTY: Prevent clickjacking
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+RewriteRule ^data/users\.json$ - [F,L,NC]
+RewriteRule ^data/matrices/.*\.json$ - [F,L,NC]
+
+# 5. ROUTING: REST API Bridge
+RewriteRule ^api/(.*)$ api.php?endpoint=$1 [QSA,L]
+
+# 6. MIME Types & Caching
+AddType image/svg+xml .svg
+AddType font/woff2 .woff2
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault "access plus 1 month"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/css application/javascript application/json image/svg+xml
+</IfModule>

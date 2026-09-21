@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>رستا | ۴۰۳ - دسترسی غیرمجاز</title>
+    <link rel="icon" type="image/png" href="/assets/favicon/favicon-96x96.png" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon/favicon.svg" />
+    <link rel="shortcut icon" href="/assets/favicon/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/favicon/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="Rasta" />
+    <link rel="manifest" href="/assets/favicon/site.webmanifest" />
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/pages/error.css">
+</head>
+<body>
+<div class="error-page-shell">
+    <div class="ambient-glow glow-top"></div>
+    <div class="ambient-glow glow-bottom"></div>
+
+    <!--#include virtual="/includes/header.html" -->
+
+    <main class="error-main">
+        <div class="error-code-watermark danger">403</div>
+
+        <div class="error-badge danger">
+            <span class="badge-dot"></span>
+            <span>خطای ۴۰۳ • دسترسی غیرمجاز</span>
+        </div>
+
+        <h1 class="error-title">دسترسی به این بخش محدود شده است</h1>
+
+        <p class="error-desc">
+            کنجکاوی در فایل‌های ریشه‌ای سامانه نتیجه‌ای جز یک خطای قرمز رنگ ندارد!<br>دسترسی به این پرونده‌ها محدود شده است.
+        </p>
+
+        <div class="error-actions">
+            <a href="/" class="btn-error-primary">
+                <span>بازگشت به صفحه اصلی</span>
+                <svg class="btn-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+            </a>
+            <a href="/management/admin/" class="btn-error-outline">
+                ورود به پنل مدیریت
+            </a>
+        </div>
+    </main>
+
+    <!--#include virtual="/includes/footer.html" -->
+</div>
+</body>
+</html>

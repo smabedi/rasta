@@ -1,0 +1,9 @@
+[
+  { "id": "medicine", "name": "پزشکی" },
+  { "id": "dentistry", "name": "دندان‌پزشکی" },
+  { "id": "pharmacy", "name": "داروسازی" },
+  { "id": "pt", "name": "فیزیوتراپی" },
+  { "id": "veterinary", "name": "دامپزشکی" },
+  { "id": "nursing", "name": "پرستاری" },
+  { "id": "biotech", "name": "زیست‌فناوری" }
+]

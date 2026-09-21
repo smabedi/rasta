@@ -1,0 +1,451 @@
+/* --------------------------------------------------------------------------
+   Navbar Brand Entrance Orchestration (Landing Page Exclusive)
+   -------------------------------------------------------------------------- */
+
+/* 1. Squircle Mark: Spring scale-in with deblur */
+@keyframes brandLogoEntrance {
+    from {
+        opacity: 0;
+        filter: blur(5px);
+        transform: scale(0.82);
+    }
+    to {
+        opacity: 1;
+        filter: blur(0);
+        transform: scale(1);
+    }
+}
+
+/* 2. Logotype: Slides out from under the squircle mark */
+@keyframes brandLogotypeEntrance {
+    from {
+        opacity: 0;
+        filter: blur(4px);
+        transform: translateX(18px) translateY(2px);
+    }
+    to {
+        opacity: 1;
+        filter: blur(0);
+        transform: translateX(0) translateY(2px);
+    }
+}
+
+/* 3. Hairline Divider: Drops open vertically */
+@keyframes brandDividerEntrance {
+    from {
+        opacity: 0;
+        transform: scaleY(0);
+    }
+    to {
+        opacity: 1;
+        transform: scaleY(1);
+    }
+}
+
+/* 4. Tagline: Unmasks from the divider right-to-left */
+@keyframes brandTaglineWipe {
+    from {
+        opacity: 0;
+        filter: blur(4px);
+        transform: translateX(10px);
+        clip-path: inset(0 0 0 100%);
+    }
+    to {
+        opacity: 1;
+        filter: blur(0);
+        transform: translateX(0);
+        clip-path: inset(0 0 0 0);
+    }
+}
+
+/* Scoped exclusively to the landing shell header */
+.landing-page-shell .navbar-fullwidth .logo-mark {
+    animation: brandLogoEntrance 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.05s backwards;
+}
+
+.landing-page-shell .navbar-fullwidth .brand-logotype {
+    animation: brandLogotypeEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.22s backwards;
+}
+
+.landing-page-shell .navbar-fullwidth .brand-divider {
+    transform-origin: center;
+    animation: brandDividerEntrance 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.48s backwards;
+}
+
+.landing-page-shell .navbar-fullwidth .brand-tagline {
+    animation: brandTaglineWipe 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.58s backwards;
+}
+
+/* --------------------------------------------------------------------------
+   Page Mount & Staggered Entrance Orchestration with Deblur Focus
+   -------------------------------------------------------------------------- */
+@keyframes heroElementEntrance {
+    from {
+        opacity: 0;
+        filter: blur(6px);
+        transform: translateY(14px);
+    }
+    to {
+        opacity: 1;
+        filter: blur(0);
+        transform: translateY(0);
+    }
+}
+
+/* Retains the -32px optical anchor while focusing in from 5px blur */
+@keyframes heroTitleEntrance {
+    from {
+        opacity: 0;
+        filter: blur(8px);
+        transform: translateX(-32px) translateY(14px);
+    }
+    to {
+        opacity: 1;
+        filter: blur(0);
+        transform: translateX(-32px) translateY(0);
+    }
+}
+
+@keyframes glowEntrance {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 0.65;
+    }
+}
+
+/* ==========================================================================
+   Rasta Landing Page - Polished SaaS Layout
+   ========================================================================== */
+
+.landing-page-shell {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow-x: hidden;
+    background-color: var(--bg-main);
+}
+
+/* Ambient Radial Glows */
+.ambient-glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.65;
+    animation: glowEntrance 1.2s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.glow-top {
+    width: 650px;
+    height: 380px;
+    top: -120px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.16) 0%, rgba(239, 246, 255, 0) 70%);
+}
+
+.glow-bottom {
+    width: 500px;
+    height: 320px;
+    bottom: 50px;
+    right: -100px;
+    background: radial-gradient(circle, rgba(147, 197, 253, 0.14) 0%, rgba(255, 255, 255, 0) 70%);
+}
+
+/* --------------------------------------------------------------------------
+   3. Hero Section
+   -------------------------------------------------------------------------- */
+.hero-container {
+    position: relative;
+    z-index: 1;
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 72px 24px 64px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 18px;
+    background: rgba(239, 246, 255, 0.9);
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+    border-radius: var(--radius-full);
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-bottom: 28px;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.08);
+    animation: heroElementEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.12s backwards;
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #22c55e;
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+    animation: pulseGlow 2s infinite;
+}
+
+@keyframes pulseGlow {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+.hero-title {
+    font-size: clamp(2.35rem, 5vw, 3.5rem);
+    font-weight: 900;
+    line-height: 1.45;
+    margin: 0 auto 24px;
+    color: #0b1329;
+    transform: translateX(-32px); /* Tweak this value to nudge left (-) or right (+) */
+    animation: heroTitleEntrance 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.22s backwards;
+}
+
+/* Rotator Wrapper: Fixed Anchor Slot (Pinned to Right, Zero Center Shifting) */
+.rotator-wrapper {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: right;
+    direction: rtl;
+    vertical-align: baseline;
+}
+
+/* Masking stage: Completely open horizontally so letters never clip */
+.word-stage {
+    position: relative;
+    display: block;
+    width: 100%;
+    overflow: visible;
+    clip-path: inset(-40px -80px 0px -80px);
+    padding: 2px 0;
+}
+
+.rotating-word {
+    display: inline-block;
+    width: auto;
+    white-space: nowrap;
+    text-align: right;
+    font-weight: 900;
+    font-variation-settings: 'wght' 900;
+    color: var(--primary);
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    will-change: transform, opacity, filter;
+}
+
+/* Exit: Accelerates upward with slight blur */
+.rotating-word.anim-exit {
+    animation: surgeExit 0.2s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+@keyframes surgeExit {
+    from {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+        filter: blur(0);
+    }
+    to {
+        transform: translateY(-50%) scale(0.96);
+        opacity: 0;
+        filter: blur(3px);
+    }
+}
+
+/* Enter: Surges in smoothly with physical inertia */
+.rotating-word.anim-enter {
+    animation: surgeFromUnderline 0.38s cubic-bezier(0.16, 1.25, 0.28, 1) forwards;
+}
+
+@keyframes surgeFromUnderline {
+    from {
+        transform: translateY(110%) scale(0.94);
+        opacity: 0;
+        filter: blur(2px);
+    }
+    to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+        filter: blur(0);
+    }
+}
+
+.hero-desc {
+    max-width: 680px;
+    margin: 0 auto 40px;
+    color: var(--text-muted);
+    font-size: clamp(1rem, 2vw, 1.15rem);
+    line-height: 1.85;
+    animation: heroElementEntrance 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.32s backwards;
+}
+
+/* Primary CTA & Vector Arrow */
+.hero-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 56px;
+    animation: heroElementEntrance 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.42s backwards;
+}
+
+.btn-hero-primary {
+    height: 52px;
+    padding: 0 34px;
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    color: #ffffff;
+    border-radius: var(--radius-sm);
+    font-size: 1.05rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 8px 24px -4px rgba(37, 99, 235, 0.45);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    text-decoration: none;
+}
+
+.btn-hero-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px -4px rgba(37, 99, 235, 0.55);
+}
+
+.btn-arrow-icon {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    flex-shrink: 0;
+}
+
+.btn-hero-primary:hover .btn-arrow-icon {
+    transform: translateX(-5px);
+}
+
+.hero-status-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.status-indicator-dot {
+    width: 6px;
+    height: 6px;
+    background-color: var(--primary);
+    border-radius: 50%;
+}
+
+/* Metric Counters Strip */
+.stats-strip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(226, 232, 240, 0.85);
+    backdrop-filter: blur(10px);
+    padding: 16px 36px;
+    border-radius: var(--radius-md);
+    max-width: 640px;
+    width: 100%;
+    animation: heroElementEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.52s backwards;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.stat-number {
+    font-size: 1.45rem;
+    font-weight: 900;
+    color: #0f172a;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.stat-divider {
+    width: 1px;
+    height: 32px;
+    background: var(--border-subtle);
+}
+
+.copyright-text {
+    font-size: 0.78rem;
+    color: var(--text-light);
+    line-height: 1.6;
+}
+
+/* Ambient Radial Glows */
+.ambient-glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.65;
+}
+
+.glow-top {
+    width: 650px;
+    height: 380px;
+    top: -120px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.16) 0%, rgba(239, 246, 255, 0) 70%);
+}
+
+.glow-bottom {
+    width: 500px;
+    height: 320px;
+    bottom: 50px;
+    right: -100px;
+    background: radial-gradient(circle, rgba(147, 197, 253, 0.14) 0%, rgba(255, 255, 255, 0) 70%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ambient-glow,
+    .hero-badge,
+    .hero-title,
+    .hero-desc,
+    .hero-actions,
+    .stats-strip,
+    .landing-page-shell .navbar-fullwidth .logo-mark,
+    .landing-page-shell .navbar-fullwidth .brand-logotype,
+    .landing-page-shell .navbar-fullwidth .brand-divider,
+    .landing-page-shell .navbar-fullwidth .brand-tagline {
+        animation: none !important;
+        opacity: 1 !important;
+        filter: none !important;
+        transform: none !important;
+        clip-path: none !important;
+    }
+    .hero-title {
+        transform: translateX(-32px) !important;
+    }
+    .landing-page-shell .navbar-fullwidth .brand-logotype {
+        transform: translateY(2px) !important;
+    }
+}

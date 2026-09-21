@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>رستا | مدیریت دسترسی‌ها (پنل ادمین)</title>
+  <link rel="stylesheet" href="/css/global.css">
+  <link rel="stylesheet" href="/css/pages/admin.css">
+</head>
+<body>
+<div class="admin-wrapper">
+  <header class="admin-topbar">
+    <div class="brand">
+      <a href="/" class="nav-back-link" title="بازگشت به سامانه رستا">
+        <span class="brand-logotype" style="height: 16px;"></span>
+      </a>
+      <span class="badge">مدیریت کاربران و دسترسی</span>
+    </div>
+    <div class="actions">
+      <a href="/management/major-matrix/" class="btn btn-outline">ورود به محیط ماتریس</a>
+      <button id="btn-admin-logout" class="btn btn-outline hidden">خروج از مدیریت</button>
+    </div>
+  </header>
+
+  <!-- View 1: First-Time Setup (Shown ONLY if no admin exists) -->
+  <div id="admin-setup-view" class="admin-gate-card hidden">
+    <h2>راه‌اندازی اولیه مدیر ارشد</h2>
+    <p>سامانه برای نخستین بار اجرا شده است. لطفاً نام و رمز عبور مدیر اصلی را تعیین کنید:</p>
+    <form id="admin-setup-form">
+      <div class="form-group">
+        <label for="setup-user-input">نام مدیر (فارسی یا انگلیسی):</label>
+        <input type="text" id="setup-user-input" placeholder="مثال: مدیریت سامانه" required autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label for="setup-pin-input">رمز عبور عددی (حداقل ۴ رقم):</label>
+        <input type="password" id="setup-pin-input" inputmode="numeric" pattern="[0-9]*" placeholder="رمز عبور عددی..." required autocomplete="off">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width: 100%;">ثبت و ایجاد دسترسی اصلی</button>
+    </form>
+    <div id="admin-setup-error" class="feedback-msg error"></div>
+  </div>
+
+  <!-- View 2: Standard Admin Login -->
+  <div id="admin-gate-view" class="admin-gate-card hidden">
+    <h2>ورود به پنل مدیریت</h2>
+    <p>جهت مدیریت اعضا، با مشخصات مدیر ارشد وارد شوید:</p>
+    <form id="admin-login-form">
+      <div class="form-group">
+        <label for="admin-user-input">نام کاربری مدیر:</label>
+        <input type="text" id="admin-user-input" placeholder="نام کاربری..." required autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label for="admin-pin-input">رمز عبور عددی:</label>
+        <input type="password" id="admin-pin-input" inputmode="numeric" placeholder="رمز عبور..." required autocomplete="off">
+      </div>
+      <button type="submit" class="btn btn-primary" style="width: 100%;">ورود به پنل</button>
+    </form>
+    <div id="admin-login-error" class="feedback-msg error"></div>
+  </div>
+
+  <!-- View 3: Authenticated Management Workspace -->
+  <main id="admin-workspace-view" class="admin-main hidden">
+    <!-- Create User Form -->
+    <section class="admin-card form-card">
+      <h2>تعریف همکار جدید</h2>
+      <p class="form-desc">همکاران با نام و رمز عددی ثبت‌شده در این بخش، امکان ورود به ماتریس را خواهند داشت.</p>
+
+      <form id="create-user-form">
+        <div class="form-group">
+          <label for="input-persian-name">نام کاربری همکار:</label>
+          <input type="text" id="input-persian-name" placeholder="مثال: علیرضا یا سارا" required autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="input-numeric-pin">رمز عبور (فقط عدد - ۴ تا ۸ رقم):</label>
+          <input type="password" id="input-numeric-pin" inputmode="numeric" pattern="[0-9]*" placeholder="رمز عبور ۴ تا ۸ رقمی..." required autocomplete="off">
+        </div>
+        <button type="submit" id="btn-create-user" class="btn btn-primary" style="width: 100%;">ایجاد حساب کاربری</button>
+      </form>
+      <div id="form-feedback" class="feedback-msg"></div>
+    </section>
+
+    <!-- User List -->
+    <section class="admin-card list-card">
+      <div class="list-header">
+        <h2>کاربران مجاز سامانه</h2>
+        <span id="user-count-badge" class="count-pill">۰ کاربر</span>
+      </div>
+      <div class="table-container">
+        <table class="user-table">
+          <thead>
+          <tr>
+            <th>نام کاربری</th>
+            <th>سطح دسترسی</th>
+            <th>تاریخ ایجاد</th>
+            <th>عملیات</th>
+          </tr>
+          </thead>
+          <tbody id="user-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="/js/core.js"></script>
+<script src="/js/pages/admin.js"></script>
+</body>
+</html>

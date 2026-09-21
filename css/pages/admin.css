@@ -1,0 +1,217 @@
+.admin-wrapper {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-subtle);
+    margin-bottom: 32px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.badge {
+    background: var(--primary-subtle);
+    color: var(--primary);
+    border: 1px solid var(--primary-border);
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Admin Login Card */
+.admin-gate-card {
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 36px 32px;
+    width: 380px;
+    max-width: 90vw;
+    margin: 40px auto;
+    box-shadow: var(--shadow-card);
+    text-align: center;
+}
+
+.admin-gate-card h2 {
+    margin: 0 0 8px;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.admin-gate-card p {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin: 0 0 24px;
+}
+
+/* Two-Column Management Layout */
+.admin-main {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 28px;
+}
+
+@media (max-width: 850px) {
+    .admin-main { grid-template-columns: 1fr; }
+}
+
+.admin-card {
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 24px;
+    box-shadow: var(--shadow-card);
+}
+
+.admin-card h2 {
+    margin: 0 0 8px;
+    font-size: 1.15rem;
+    font-weight: 700;
+}
+
+.form-desc {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    margin: 0 0 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+    text-align: right;
+}
+
+.form-group label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.form-group input {
+    padding: 10px 14px;
+    border: 2px solid var(--border-subtle);
+    border-radius: var(--radius-xs);
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.15s ease;
+}
+
+.form-group input:focus {
+    border-color: var(--primary);
+}
+
+.feedback-msg {
+    margin-top: 12px;
+    font-size: 0.82rem;
+    text-align: center;
+    font-weight: 600;
+}
+
+.feedback-msg.success { color: #16a34a; }
+.feedback-msg.error { color: var(--danger-solid); }
+
+/* User List Table */
+.list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.count-pill {
+    background: #f1f5f9;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.user-table th {
+    text-align: right;
+    padding: 10px 12px;
+    border-bottom: 2px solid var(--border-subtle);
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.user-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-light);
+    vertical-align: middle;
+}
+
+.role-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.role-badge.admin {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.role-badge.editor {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.btn-delete {
+    background: none;
+    border: 1px solid var(--danger-border);
+    color: var(--danger-solid);
+    padding: 4px 10px;
+    border-radius: var(--radius-xs);
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 600;
+    transition: all 0.15s ease;
+}
+
+.btn-delete:hover {
+    background: var(--danger-subtle);
+}
+
+.btn-delete:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    border-color: var(--border-subtle);
+    color: var(--text-light);
+}

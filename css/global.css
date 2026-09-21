@@ -1,0 +1,618 @@
+/* 1. Local Vazirmatn Variable Font (Round-Dots with standard fallback) */
+@font-face {
+    font-family: 'Vazirmatn';
+    src: url('../assets/fonts/Vazirmatn-RD[wght].woff2') format('woff2-variations'),
+    url('../assets/fonts/Vazirmatn-RD[wght].woff2') format('woff2'),
+    url('../assets/fonts/Vazirmatn[wght].woff2') format('woff2-variations'),
+    url('../assets/fonts/Vazirmatn[wght].woff2') format('woff2');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* 2. Global Tokens */
+:root {
+    --bg-main: #f8fafc;
+    --surface: #ffffff;
+
+    --border-light: #f1f5f9;
+    --border-subtle: #e2e8f0;
+    --border-active: #cbd5e1;
+
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --text-light: #7e8b9a;
+
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-subtle: #eff6ff;
+    --primary-border: #bfdbfe;
+
+    --danger-solid: #ef4444;
+    --danger-subtle: #fef2f2;
+    --danger-border: #fecaca;
+    --danger-hover: #dc2626;
+
+    --radius-xs: 6px;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-full: 9999px;
+
+    --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.04);
+    --shadow-card: 0 4px 16px -2px rgba(15, 23, 42, 0.06);
+    --shadow-float: 0 14px 35px -4px rgba(15, 23, 42, 0.14);
+
+    --font-main: 'Vazirmatn', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: var(--font-main), serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, button, input, select, textarea {
+    font-family: var(--font-main), serif;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* 2 Brand Logotype (Pure Vector Stencil via Mask) */
+.brand-logotype {
+    display: inline-block;
+    background-color: currentColor;
+    -webkit-mask: url('/assets/images/rasta-logotype.svg') no-repeat center / contain;
+    mask: url('/assets/images/rasta-logotype.svg') no-repeat center / contain;
+    aspect-ratio: 2.15 / 1;
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+
+/* 4. Global Button System */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 18px;
+    border-radius: var(--radius-xs);
+    font-size: 0.88rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    outline: none;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: #ffffff;
+    border-color: var(--primary);
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+    border-color: var(--primary-hover);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+
+.btn-outline {
+    border-color: var(--border-subtle);
+    background: var(--surface);
+    color: var(--text-main);
+}
+
+.btn-outline:hover {
+    background: #f8fafc;
+    border-color: var(--border-active);
+}
+
+.btn-danger {
+    background: var(--danger-solid);
+    color: #ffffff;
+    border-color: var(--danger-solid);
+}
+
+.btn-danger:hover {
+    background: var(--danger-hover);
+    border-color: var(--danger-hover);
+}
+
+.btn-sm {
+    padding: 5px 12px;
+    font-size: 0.8rem;
+}
+
+/* 5. Global Modals & Refined Rounded-Rectangle Close Button */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.modal-overlay.hidden {
+    display: none !important;
+}
+
+.modal-card {
+    background: var(--surface);
+    padding: 32px 28px;
+    border-radius: var(--radius-md);
+    width: 420px;
+    max-width: 92vw;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: var(--shadow-float);
+    border: 1px solid var(--border-subtle);
+    position: relative;
+    text-align: center;
+}
+
+/* Rounded rectangle back/close button matching website styles */
+.modal-close-btn {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    padding: 4px 12px;
+    background: #f8fafc;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xs);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.modal-close-btn:hover {
+    background: var(--primary-subtle);
+    border-color: var(--primary-border);
+    color: var(--primary);
+}
+
+.nav-back-link {
+    font-weight: 700;
+    color: var(--primary);
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 8px;
+    border-radius: var(--radius-xs);
+    transition: background 0.15s ease;
+}
+
+.nav-back-link:hover {
+    background: var(--primary-subtle);
+}
+
+/* 6. Modern Floating Toast Notifications (Non-blocking) */
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 99999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none; /* Clicks pass right through without blocking */
+    direction: rtl;
+}
+
+.toast {
+    pointer-events: none; /* Non-touchable */
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 280px;
+    max-width: 400px;
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    border-right-width: 4px;
+    box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.12),
+    0 4px 10px -2px rgba(15, 23, 42, 0.05);
+    font-size: 0.88rem;
+    font-weight: 500;
+    color: var(--text-main);
+    transform: translateX(40px) scale(0.96);
+    opacity: 0;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toast.show {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+}
+
+.toast.hide {
+    transform: translateX(30px) scale(0.96);
+    opacity: 0;
+}
+
+/* Status variants */
+.toast-success {
+    border-right-color: #16a34a;
+}
+.toast-success .toast-icon {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.toast-error {
+    border-right-color: #ef4444;
+}
+.toast-error .toast-icon {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.toast-warning {
+    border-right-color: #f59e0b;
+}
+.toast-warning .toast-icon {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.toast-info {
+    border-right-color: var(--primary);
+}
+.toast-info .toast-icon {
+    background: var(--primary-subtle);
+    color: var(--primary);
+}
+
+.toast-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.toast-content {
+    flex: 1;
+    line-height: 1.5;
+}
+
+/* 7. Custom In-App Confirmation Dialog */
+.dialog-card {
+    width: 400px;
+    padding: 30px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    animation: dialogPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes dialogPopIn {
+    from {
+        opacity: 0;
+        transform: scale(0.93) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.dialog-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+}
+
+.dialog-icon.danger {
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+}
+
+.dialog-icon.primary {
+    background: var(--primary-subtle);
+    border: 1px solid var(--primary-border);
+}
+
+.dialog-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-main);
+}
+
+.dialog-message {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin: 8px 0 20px;
+    line-height: 1.6;
+}
+
+.dialog-actions {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.dialog-actions .btn {
+    flex: 1;
+}
+
+/* 8. Shared Full-Bleed Navigation Bar (Landing, Errors & Public Views) */
+.navbar-fullwidth {
+    width: 100%;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.navbar-inner {
+    max-width: 1340px;
+    margin: 0 auto;
+    padding: 14px clamp(20px, 4vw, 48px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar-fullwidth .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.navbar-fullwidth .brand .brand-logotype {
+    height: 20px;
+    color: var(--text-main);
+    transform: translateY(2px);
+}
+
+.brand-divider {
+    width: 1px;
+    height: 18px;
+    background-color: var(--border-active);
+}
+
+.brand-tagline {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.logo-mark {
+    width: 40px;
+    height: 40px;
+    display: block;
+    flex-shrink: 0;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.nav-link {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: var(--radius-xs);
+    transition: all 0.15s ease;
+}
+
+.nav-link:hover {
+    color: var(--text-main);
+    background: #f1f5f9;
+}
+
+.btn-nav-outline {
+    height: 40px;
+    padding: 0 18px;
+    border-radius: var(--radius-xs);
+    font-size: 0.88rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface);
+    color: var(--text-main);
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-subtle);
+    transition: all 0.15s ease;
+    text-decoration: none;
+}
+
+.btn-nav-outline:hover {
+    background: #f8fafc;
+    border-color: var(--border-active);
+    color: var(--primary);
+}
+
+
+/* 9. Shared Full-Bleed Modern Footer */
+.footer-fullwidth {
+    width: 100%;
+    border-top: 1px solid var(--border-subtle);
+    background: #ffffff;
+    margin-top: 40px;
+    position: relative;
+    z-index: 10;
+}
+
+.footer-inner {
+    max-width: 1340px;
+    margin: 0 auto;
+    padding: 52px clamp(20px, 4vw, 48px) 40px;
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1.2fr;
+    gap: 48px;
+}
+
+@media (max-width: 860px) {
+    .footer-inner {
+        grid-template-columns: 1fr;
+        gap: 36px;
+        text-align: center;
+    }
+
+    .footer-col {
+        align-items: center;
+    }
+
+    .footer-brand {
+        justify-content: center;
+    }
+
+    .developer-card {
+        justify-content: center;
+    }
+}
+
+.footer-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.logo-mark-sm {
+    width: 28px;
+    height: 28px;
+    display: block;
+    flex-shrink: 0;
+    border-radius: var(--radius-xs);
+}
+
+.footer-brand .brand-logotype {
+    height: 18px;
+    color: var(--text-main);
+    transform: translateY(2px);
+}
+
+.footer-mission {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    line-height: 1.8;
+    margin: 0;
+    max-width: 380px;
+}
+
+.footer-col-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0 0 8px;
+    display: block;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.footer-links li {
+    margin: 0;
+    padding: 0;
+    line-height: 1.3;
+}
+
+.footer-links li a {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    transition: color 0.15s ease;
+    display: inline-block;
+}
+
+.footer-links li a:hover {
+    color: var(--primary);
+}
+
+.admin-link {
+    font-weight: 600;
+    color: var(--text-main) !important;
+}
+
+.admin-link:hover {
+    color: var(--primary) !important;
+}
+
+.developer-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.author-badge {
+    color: var(--primary);
+    font-weight: 700;
+    background: var(--primary-subtle);
+    padding: 3px 7px;
+    border-radius: var(--radius-xs);
+    border: 1px solid var(--primary-border);
+    transition: all 0.15s ease;
+}
+
+.author-badge:hover {
+    background: var(--primary);
+    color: #ffffff;
+}
+
+.copyright-text {
+    font-size: 0.78rem;
+    color: var(--text-light);
+    line-height: 1.6;
+}

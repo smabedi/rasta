@@ -1,0 +1,35 @@
+# IntelliJ IDEA
+*.iml
+.idea/
+out/
+gen/
+
+# Web & Local Cache
+.cache/
+dist/
+tmp/
+*.bak
+
+# Matrix Exports & Local JSON Dumps
+/data/matrices/
+/data/users.json
+*.export.json
+
+# Windows system files
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# General logs
+*.log
+
+# Personal Tools
+/personal/
+
+# Secret web app files
+.env

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>رستا | ماتریس اعتبارسنجی رشته-دانشگاه</title>
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="/css/pages/major-matrix.css">
+</head>
+<body>
+<!-- Mandatory Login Modal -->
+<div id="user-modal" class="modal-overlay">
+    <div class="modal-card">
+        <button type="button" id="btn-close-modal" class="modal-close-btn" title="بازگشت به صفحه اصلی">بازگشت</button>
+        <h3>ورود به پنل اعتبارسنجی</h3>
+        <p>جهت ویرایش ماتریس، با مشخصات ثبت‌شده توسط مدیر وارد شوید:</p>
+        <form id="matrix-login-form">
+            <input type="text" id="input-username" placeholder="نام کاربری..." aria-label="نام کاربری" required autocomplete="off">
+            <input type="password" id="input-pin" inputmode="numeric" pattern="[0-9]*" placeholder="رمز عبور عددی..." aria-label="رمز عبور عددی" required autocomplete="off">
+            <button type="submit" id="btn-login-submit" class="btn btn-primary">ورود به سیستم</button>
+        </form>
+        <div id="login-error-msg" class="login-error"></div>
+    </div>
+</div>
+
+<!-- Conflict Resolution Modal -->
+<div id="conflict-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+        <h3 style="color: var(--danger-solid);">⚠️ تداخل تغییرات همزمان</h3>
+        <p id="conflict-description">
+            همکار شما اخیراً این ماتریس را ذخیره کرده است. نحوه اعمال تغییرات خود را انتخاب کنید:
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+            <button type="button" id="btn-conflict-merge" class="btn btn-primary">ادغام تغییرات (ترکیب هر دو)</button>
+            <button type="button" id="btn-conflict-fork" class="btn btn-outline">ذخیره به عنوان نسخه خودم (جلوگیری از دست رفتن داده)</button>
+            <button type="button" id="btn-conflict-overwrite" class="btn btn-danger">بازنویسی و جایگزینی کامل</button>
+            <button type="button" id="btn-conflict-cancel" class="btn btn-outline" style="border-style: dashed;">لغو و بازبینی</button>
+        </div>
+    </div>
+</div>
+
+<div class="matrix-layout">
+    <!-- Top Navigation & Controls -->
+    <header class="matrix-topbar">
+        <div class="topbar-left">
+            <a href="/" class="nav-back-link" title="بازگشت به سامانه رستا">
+                <span class="brand-logotype" style="height: 16px;"></span>
+            </a>
+            <div class="active-user-badge">
+                کاربر: <strong id="display-user">...</strong>
+            </div>
+            <button id="btn-logout" class="btn btn-outline btn-sm">خروج</button>
+            <a href="/management/admin/" id="link-admin" class="btn btn-outline btn-sm hidden">پنل مدیریت</a>
+        </div>
+
+        <!-- Dynamic Stream Switcher & Target Profile Selector -->
+        <div class="topbar-center">
+            <div id="stream-toggle-container" class="segmented-control" role="tablist"></div>
+
+            <div class="save-select-wrapper">
+                <label for="profile-select">نسخه در حال ویرایش:</label>
+                <select id="profile-select"></select>
+            </div>
+        </div>
+
+        <div class="topbar-right">
+            <button id="btn-save" class="btn btn-primary">ذخیره تغییرات ماتریس</button>
+            <button id="btn-export-json" class="btn btn-outline">خروجی JSON</button>
+        </div>
+    </header>
+
+    <!-- Status & Legend Bar -->
+    <div class="legend-bar">
+        <div class="legend-left">
+            <span>💡 برای تغییر وضعیت، روی سلول‌ها کلیک کرده یا ماوس را بکشید.</span>
+            <span id="load-status" class="load-status"></span>
+        </div>
+        <div class="legend-indicators">
+                <span class="indicator-item">
+                    <span class="legend-box valid"></span> مجاز / موجود
+                </span>
+            <span class="indicator-item">
+                    <span class="legend-box invalid"></span> ناموجود / خط‌خورده
+                </span>
+        </div>
+    </div>
+
+    <!-- Scrollable Matrix Viewport -->
+    <main class="matrix-scroll-area">
+        <table id="matrix-table">
+            <thead>
+            <tr id="matrix-thead-row">
+                <th class="sticky-cell sticky-corner">دانشگاه / رشته</th>
+            </tr>
+            </thead>
+            <tbody id="matrix-tbody"></tbody>
+        </table>
+    </main>
+</div>
+
+<script src="/js/core.js"></script>
+<script src="/js/pages/major-matrix.js"></script>
+</body>
+</html>

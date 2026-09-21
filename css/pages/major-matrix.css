@@ -1,0 +1,323 @@
+body {
+    user-select: none;
+    overflow: hidden;
+}
+
+.matrix-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: var(--bg-main);
+}
+
+/* Header & Controls */
+.matrix-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--surface);
+    padding: 10px 24px;
+    border-bottom: 1px solid var(--border-subtle);
+    gap: 16px;
+    flex-shrink: 0;
+}
+
+.topbar-left, .topbar-center, .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.active-user-badge {
+    background: var(--primary-subtle);
+    color: var(--primary);
+    border: 1px solid var(--primary-border);
+    padding: 6px 12px;
+    border-radius: var(--radius-xs);
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.btn-sm {
+    padding: 4px 10px;
+    font-size: 0.78rem;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Segmented Control */
+.segmented-control {
+    display: inline-flex;
+    background: #f1f5f9;
+    padding: 3px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-subtle);
+    gap: 3px;
+}
+
+.segment-btn {
+    border: none;
+    background: transparent;
+    padding: 6px 14px;
+    border-radius: var(--radius-xs);
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.segment-btn:hover { color: var(--text-main); }
+
+.segment-btn.active {
+    background: var(--surface);
+    color: var(--primary);
+    font-weight: 700;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.save-select-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+
+select {
+    padding: 6px 12px;
+    border-radius: var(--radius-xs);
+    border: 1px solid var(--border-subtle);
+    background: var(--surface);
+    color: var(--text-main);
+    font-size: 0.82rem;
+    cursor: pointer;
+    outline: none;
+}
+
+.btn {
+    padding: 7px 16px;
+    border-radius: var(--radius-xs);
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
+.btn-primary:hover { background: var(--primary-hover); }
+
+.btn-outline {
+    border-color: var(--border-subtle);
+    background: var(--surface);
+    color: var(--text-main);
+}
+.btn-outline:hover {
+    background: #f8fafc;
+    border-color: var(--border-active);
+}
+
+/* Legend Bar (Indicators) */
+.legend-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border-light);
+    padding: 8px 24px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.legend-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.load-status {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.legend-indicators {
+    display: flex;
+    gap: 20px;
+}
+
+.indicator-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+/* The Fixed Legend Box */
+.legend-box {
+    width: 22px;
+    height: 16px;
+    border-radius: 4px;
+    display: inline-block;
+    border: 1px solid var(--border-subtle);
+}
+
+.legend-box.valid {
+    background: #ffffff;
+}
+
+.legend-box.invalid {
+    background-color: #fef2f2;
+    border-color: #fca5a5;
+    background-image: repeating-linear-gradient(
+            -45deg,
+            transparent,
+            transparent 3px,
+            #f87171 3px,
+            #f87171 4px
+    );
+}
+
+/* Matrix Table Viewport */
+.matrix-scroll-area {
+    flex: 1;
+    overflow: auto;
+    position: relative;
+    padding: 16px;
+}
+
+table {
+    border-collapse: separate;
+    border-spacing: 5px;
+}
+
+th, td {
+    padding: 8px 14px;
+    text-align: center;
+    white-space: nowrap;
+    font-size: 0.82rem;
+}
+
+thead th {
+    position: sticky;
+    top: 0;
+    background: #edf2f7;
+    z-index: 10;
+    font-weight: 700;
+    color: var(--text-main);
+    border-radius: var(--radius-xs);
+}
+
+.sticky-cell {
+    position: sticky;
+    right: 0;
+    background: #f1f5f9;
+    z-index: 9;
+    text-align: right;
+    font-weight: 600;
+    border-radius: var(--radius-xs);
+}
+
+.sticky-corner {
+    z-index: 20 !important;
+    background: #e2e8f0;
+}
+
+/* Active & Valid Cell */
+.matrix-cell {
+    cursor: pointer;
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-xs);
+    transition: all 0.1s ease;
+    min-width: 52px;
+    height: 38px;
+    position: relative;
+}
+
+.matrix-cell:hover {
+    border-color: var(--primary-border);
+    background: var(--primary-subtle);
+}
+
+/* The Modern Architectural Invalid Indicator */
+.matrix-cell.invalid {
+    background-color: #fff1f2 !important;
+    border-color: #fecdd3 !important;
+    background-image: repeating-linear-gradient(
+            -45deg,
+            transparent,
+            transparent 6px,
+            rgba(244, 63, 94, 0.35) 6px,
+            rgba(244, 63, 94, 0.35) 7.5px
+    );
+}
+
+/* Modal Form */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.modal-card {
+    background: var(--surface);
+    padding: 32px;
+    border-radius: var(--radius-md);
+    width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: var(--shadow-float);
+    border: 1px solid var(--border-subtle);
+    text-align: center;
+}
+
+.modal-card h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.modal-card p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.modal-card form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.modal-card input {
+    padding: 10px 14px;
+    border: 2px solid var(--border-subtle);
+    border-radius: var(--radius-xs);
+    outline: none;
+    font-size: 0.92rem;
+    text-align: center;
+}
+
+.modal-card input:focus {
+    border-color: var(--primary);
+}
+
+.login-error {
+    color: var(--danger-solid);
+    font-size: 0.82rem;
+    font-weight: 600;
+}

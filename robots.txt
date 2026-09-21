@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Allow: /management/major-matrix/
+Disallow: /api/
+Disallow: /data/
+Disallow: /management/admin/
