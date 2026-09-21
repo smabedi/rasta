@@ -7,10 +7,11 @@ ErrorDocument 403 /403.shtml
 ErrorDocument 404 /404.shtml
 ErrorDocument 500 /500.shtml
 
-# SSI Configuration for HTML and SHTML
+# SSI Configuration via Server-Parsed Handler
 <FilesMatch "\.(html|shtml)$">
+    AddType text/html .html
+    AddHandler server-parsed .html
     Options +Includes
-    SetOutputFilter INCLUDES
 </FilesMatch>
 
 # Favicon Fallback for pages without explicit HTML link tags
