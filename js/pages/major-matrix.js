@@ -182,7 +182,7 @@ function getDraftKey(userId, stream) {
 async function loadMatrixData(userId) {
     setLoading(true, "در حال فراخوانی فایل ماتریس از سرور...");
     try {
-        const res = await fetch(`/api/matrix/${activeStream}/${userId}`);
+        const res = await fetch(`/api/matrix/${activeStream}/${userId}`, { cache: 'no-store' });
         const serverData = await res.json();
 
         matrixState = serverData.matrix || {};
