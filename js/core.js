@@ -24,7 +24,7 @@ let RastaAuth = (() => {
     }
 
     async function checkAdminStatus() {
-        const res = await fetch('/api/auth/status');
+        const res = await fetch('/api/auth/status', { cache: 'no-store' });
         const data = await res.json();
         return data.hasAdmin;
     }
@@ -73,7 +73,7 @@ let RastaAuth = (() => {
     }
 
     async function fetchUsers() {
-        const res = await fetch('/api/users');
+        const res = await fetch('/api/users', { cache: 'no-store' });
         const data = await res.json();
         return data.users || [];
     }
