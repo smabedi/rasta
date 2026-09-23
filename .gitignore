@@ -13,6 +13,7 @@ tmp/
 # Matrix Exports & Local JSON Dumps
 /data/matrices/
 /data/users.json
+/data/presence.json
 *.export.json
 
 # Windows system files
