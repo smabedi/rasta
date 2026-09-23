@@ -71,6 +71,13 @@
     display: grid;
     grid-template-columns: 360px 1fr;
     gap: 28px;
+    align-items: start;
+}
+
+.admin-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
 }
 
 @media (max-width: 850px) {
@@ -214,4 +221,72 @@
     cursor: not-allowed;
     border-color: var(--border-subtle);
     color: var(--text-light);
+}
+
+/* Dev Tools Card Layout & Typography */
+.dev-card-header {
+    margin-bottom: 12px;
+}
+
+.dev-card-title {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-main);
+    white-space: nowrap;
+}
+
+.dev-card-emoji {
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+/* Link Card & Vector Arrow Interaction */
+.dev-tool-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    background: #f8fafc;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xs);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    text-decoration: none;
+}
+
+.dev-tool-link:hover {
+    background: var(--primary-subtle);
+    border-color: var(--primary-border);
+    transform: scale(0.99);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+}
+
+.dev-tool-link:hover .tool-title {
+    color: var(--primary);
+}
+
+/* Crisp Vector Action Arrow */
+.dev-link-arrow {
+    width: 18px;
+    height: 18px;
+    color: var(--text-light);
+    flex-shrink: 0;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease;
+}
+
+.dev-tool-link:hover .dev-link-arrow {
+    color: var(--primary);
+    transform: translate(3px, -3px); /* Smooth diagonal glide on hover */
+}
+
+.dev-links-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding-top: 15px;
 }

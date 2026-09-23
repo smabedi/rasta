@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>رستا | آزمایشگاه تعیین ضرایب اولویت‌بندی (α, β, γ)</title>
+    <!--#include virtual="/includes/favicons.html" -->
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="style.css">
+
+    <!-- KaTeX for Academic Mathematical Formula Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+</head>
+<body>
+<div class="lab-shell">
+    <div class="ambient-glow glow-top"></div>
+
+    <!--#include virtual="/includes/header.html" -->
+
+    <main class="lab-container">
+        <!-- 1. Presentation Header -->
+        <header class="lab-header">
+            <div class="lab-badge">
+                <span class="lab-badge-dot"></span>
+                <span>آزمایشگاه الگوریتم رستا • اعتبارسنجی ورودی‌های تابع مطلوبیت</span>
+            </div>
+            <h1 class="lab-title">تعیین تعاملی ضرایب کاپ-داگلاس (α, β, γ)</h1>
+            <p class="lab-desc">
+                مقایسه و تست ۴ شیوه مختلف طراحی رابط کاربری برای دریافت اولویت‌های داوطلب تحت شرط جمع ثابت
+                ($\alpha + \beta + \gamma = 1$).<br> تغییر هر مؤلفه بلافاصله سایر بخش‌ها و شبیه‌ساز رتبه‌بندی را به‌روز می‌کند.
+            </p>
+        </header>
+
+        <!-- 2. Master Realtime State Ribbon -->
+        <section class="live-weights-banner">
+            <div class="weight-metric-card">
+                <div class="weight-metric-icon">🎓</div>
+                <div class="weight-metric-info">
+                    <span class="weight-metric-label">ضریب رشته تحصیلی (α)</span>
+                    <div class="metric-val-row">
+                        <span class="weight-metric-val" id="disp-alpha">۰٫۵۰</span>
+                        <span class="weight-metric-percent" id="disp-alpha-pct">۵۰٪</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="weight-metric-card">
+                <div class="weight-metric-icon">🏛️</div>
+                <div class="weight-metric-info">
+                    <span class="weight-metric-label">ضریب اعتبار دانشگاه (β)</span>
+                    <div class="metric-val-row">
+                        <span class="weight-metric-val" id="disp-beta">۰٫۳۰</span>
+                        <span class="weight-metric-percent" id="disp-beta-pct">۳۰٪</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="weight-metric-card">
+                <div class="weight-metric-icon">📍</div>
+                <div class="weight-metric-info">
+                    <span class="weight-metric-label">ضریب شهر و مسافت (γ)</span>
+                    <div class="metric-val-row">
+                        <span class="weight-metric-val" id="disp-gamma">۰٫۲۰</span>
+                        <span class="weight-metric-percent" id="disp-gamma-pct">۲۰٪</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="weight-metric-card balanced-card">
+                <div class="weight-metric-icon sum-icon">Σ</div>
+                <div class="weight-metric-info">
+                    <span class="weight-metric-label">مجموع ضرایب (قید توازن)</span>
+                    <div class="metric-val-row">
+                        <span class="weight-metric-val" id="disp-sum">۱٫۰۰</span>
+                        <span class="weight-metric-percent sum-pct">۱۰۰٪</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. The 4 Interactive Input Approaches -->
+        <div class="approaches-grid">
+
+            <!-- Approach A: Presets (Archetypes) -->
+            <section class="approach-card">
+                <div class="approach-head">
+                    <div class="approach-title-group">
+                        <h2 class="approach-title">رویکرد ۱: تیپ‌شناسی شخصیتی (Presets)</h2>
+                        <p class="approach-summary">ساده‌ترین شیوه برای عموم داوطلبان؛ انتخاب با ۱ کلیک بر اساس ذهنیت ذهنی داوطلب.</p>
+                    </div>
+                    <span class="approach-tag">پیشنهادی برای موبایل</span>
+                </div>
+
+                <div class="preset-list">
+                    <button type="button" class="preset-btn active" data-alpha="0.60" data-beta="0.25" data-gamma="0.15">
+                        <span class="preset-name">🎓 رشته‌محور</span>
+                        <span class="preset-weights">۶۰٪ رشته • ۲۵٪ دانشگاه • ۱۵٪ شهر</span>
+                    </button>
+
+                    <button type="button" class="preset-btn" data-alpha="0.25" data-beta="0.60" data-gamma="0.15">
+                        <span class="preset-name">🏛️ دانشگاه‌محور</span>
+                        <span class="preset-weights">۲۵٪ رشته • ۶۰٪ دانشگاه • ۱۵٪ شهر</span>
+                    </button>
+
+                    <button type="button" class="preset-btn" data-alpha="0.34" data-beta="0.33" data-gamma="0.33">
+                        <span class="preset-name">⚖️ تعادل همه‌جانبه</span>
+                        <span class="preset-weights">۳۴٪ رشته • ۳۳٪ دانشگاه • ۳۳٪ شهر</span>
+                    </button>
+
+                    <button type="button" class="preset-btn" data-alpha="0.30" data-beta="0.20" data-gamma="0.50">
+                        <span class="preset-name">📍 بومی و خانواده‌محور</span>
+                        <span class="preset-weights">۳۰٪ رشته • ۲۰٪ دانشگاه • ۵۰٪ شهر</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Approach B: Auto-Normalizing Sliders -->
+            <section class="approach-card">
+                <div class="approach-head">
+                    <div class="approach-title-group">
+                        <h2 class="approach-title">رویکرد ۲: اسلایدرهای خودتراز شونده (Auto-Normalizing)</h2>
+                        <p class="approach-summary">کاربر مقادیر خام (۰ تا ۱۰۰) را حرکت می‌دهد و سامانه بدون قفل کردن اسلایدرها، سهم نسبی را حساب می‌کند.</p>
+                    </div>
+                    <span class="approach-tag">استاندارد نرم‌افزاری</span>
+                </div>
+
+                <div class="slider-group">
+                    <div class="slider-group">
+                        <div class="slider-row">
+                            <div class="slider-label-row">
+                                <label for="slider-m">رشته تحصیلی (Major)</label>
+                                <span class="slider-meta-val" id="slider-val-m">۵۰</span>
+                            </div>
+                            <input type="range" id="slider-m" min="5" max="100" value="50" step="1">
+                        </div>
+
+                        <div class="slider-row">
+                            <div class="slider-label-row">
+                                <label for="slider-u">اعتبار دانشگاه (University)</label>
+                                <span class="slider-meta-val" id="slider-val-u">۳۰</span>
+                            </div>
+                            <input type="range" id="slider-u" min="5" max="100" value="30" step="1">
+                        </div>
+
+                        <div class="slider-row">
+                            <div class="slider-label-row">
+                                <label for="slider-c">شهر و مسافت (City)</label>
+                                <span class="slider-meta-val" id="slider-val-c">۲۰</span>
+                            </div>
+                            <input type="range" id="slider-c" min="5" max="100" value="20" step="1">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Approach C: Token Budget Allocation -->
+            <section class="approach-card">
+                <div class="approach-head">
+                    <div class="approach-title-group">
+                        <h2 class="approach-title">رویکرد ۳: سبد ژتون‌های تخصیص (۱۰ امتیاز)</h2>
+                        <p class="approach-summary">داوطلب ۱۰ مهره امتیازی را بین ۳ شاخص تقسیم می‌کند. فهم بدون درگیر شدن با اعشار و ریاضیات.</p>
+                    </div>
+                    <span class="approach-tag">گیمیفیکیشن شهودی</span>
+                </div>
+
+                <div class="token-budget-bar">
+                    <span>امتیاز باقی‌مانده برای خرج‌کردن:</span>
+                    <span class="budget-remaining" id="token-pool-disp">۰ از ۱۰</span>
+                </div>
+
+                <div class="stepper-list">
+                    <div class="stepper-row">
+                        <div class="stepper-title">
+                            <span>رشته تحصیلی</span>
+                            <span class="stepper-sub" id="token-pct-m">۵۰٪ وزن اثرگذاری</span>
+                        </div>
+                        <div class="stepper-ctrl">
+                            <button type="button" class="btn-stepper" data-action="dec" data-target="m">-</button>
+                            <span class="stepper-display" id="token-val-m">۵</span>
+                            <button type="button" class="btn-stepper" data-action="inc" data-target="m">+</button>
+                        </div>
+                    </div>
+
+                    <div class="stepper-row">
+                        <div class="stepper-title">
+                            <span>اعتبار دانشگاه</span>
+                            <span class="stepper-sub" id="token-pct-u">۳۰٪ وزن اثرگذاری</span>
+                        </div>
+                        <div class="stepper-ctrl">
+                            <button type="button" class="btn-stepper" data-action="dec" data-target="u">-</button>
+                            <span class="stepper-display" id="token-val-u">۳</span>
+                            <button type="button" class="btn-stepper" data-action="inc" data-target="u">+</button>
+                        </div>
+                    </div>
+
+                    <div class="stepper-row">
+                        <div class="stepper-title">
+                            <span>شهر و مسافت</span>
+                            <span class="stepper-sub" id="token-pct-c">۲۰٪ وزن اثرگذاری</span>
+                        </div>
+                        <div class="stepper-ctrl">
+                            <button type="button" class="btn-stepper" data-action="dec" data-target="c">-</button>
+                            <span class="stepper-display" id="token-val-c">۲</span>
+                            <button type="button" class="btn-stepper" data-action="inc" data-target="c">+</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Approach D: Ternary Simplex Triangle -->
+            <section class="approach-card">
+                <div class="approach-head">
+                    <div class="approach-title-group">
+                        <h2 class="approach-title">رویکرد ۴: مثلث توازن سه‌گانه (Ternary Simplex)</h2>
+                        <p class="approach-summary">حرکت دادن گوی در مثلث مختصات باری‌سنتریک؛ بدون اسلایدر و بدون نقض شرط مجموع یک.</p>
+                    </div>
+                    <span class="approach-tag">خلاقانه و تعاملی</span>
+                </div>
+
+                <div class="triangle-container">
+                    <svg id="ternary-svg" class="ternary-svg" viewBox="0 0 320 270">
+                        <polygon class="triangle-base" points="160,28 292,235 28,235"></polygon>
+                        <line class="triangle-grid" x1="160" y1="28" x2="160" y2="235"></line>
+                        <line class="triangle-grid" x1="28" y1="235" x2="226" y2="131"></line>
+                        <line class="triangle-grid" x1="292" y1="235" x2="94" y2="131"></line>
+
+                        <text x="160" y="18" class="triangle-vertex-label">رشته تحصیلی (α)</text>
+                        <text x="280" y="254" class="triangle-vertex-label">دانشگاه (β)</text>
+                        <text x="40" y="254" class="triangle-vertex-label">شهر (γ)</text>
+
+                        <circle id="puck" class="triangle-puck" cx="160" cy="130" r="8"></circle>
+                    </svg>
+                    <span class="triangle-hint">گوی آبی را لمس کرده و به سمت اولویت دلخواه بکشید</span>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- 4. Live Ranking Preview Engine (Realtime Cobb-Douglas Proof) -->
+        <section class="simulation-card">
+            <div class="simulation-head">
+                <div class="simulation-title-group">
+                    <h2 class="simulation-title">
+                        اثبات تجربی: رتبه‌بندی زنده ۳ انتخاب واقعی بر اساس ضرایب فعلی
+                    </h2>
+                    <p class="simulation-desc">
+                        مشاهده کنید چگونه تغییر وزن‌ها، اولویت کدرشته‌های متناقض را به صورت بلادرنگ جابه‌جا می‌کند:
+                    </p>
+                </div>
+                <div class="simulation-formula-box" id="formula-container">
+                    <span id="formula-katex">$$U(o) = (R_m)^\alpha \cdot (R_u)^\beta \cdot (C_{\text{city}})^\gamma$$</span>
+                </div>
+            </div>
+
+            <div class="candidate-rank-grid" id="candidate-cards-container">
+                <!-- Dynamically populated and sorted with Persian numerals -->
+            </div>
+        </section>
+
+    </main>
+
+    <!--#include virtual="/includes/footer.html" -->
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

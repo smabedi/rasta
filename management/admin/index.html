@@ -6,7 +6,7 @@
   <title>رستا | مدیریت دسترسی‌ها (پنل ادمین)</title>
   <!--#include virtual="/includes/favicons.html" -->
   <link rel="stylesheet" href="/css/global.css">
-  <link rel="stylesheet" href="/css/pages/admin.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="admin-wrapper">
@@ -61,26 +61,65 @@
 
   <!-- View 3: Authenticated Management Workspace -->
   <main id="admin-workspace-view" class="admin-main hidden">
-    <!-- Create User Form -->
-    <section class="admin-card form-card">
-      <h2>تعریف همکار جدید</h2>
-      <p class="form-desc">همکاران با نام و رمز عددی ثبت‌شده در این بخش، امکان ورود به ماتریس را خواهند داشت.</p>
 
-      <form id="create-user-form">
-        <div class="form-group">
-          <label for="input-persian-name">نام کاربری همکار:</label>
-          <input type="text" id="input-persian-name" placeholder="مثال: علیرضا یا سارا" required autocomplete="off">
-        </div>
-        <div class="form-group">
-          <label for="input-numeric-pin">رمز عبور (فقط عدد - ۴ تا ۸ رقم):</label>
-          <input type="password" id="input-numeric-pin" inputmode="numeric" pattern="[0-9]*" placeholder="رمز عبور ۴ تا ۸ رقمی..." required autocomplete="off">
-        </div>
-        <button type="submit" id="btn-create-user" class="btn btn-primary" style="width: 100%;">ایجاد حساب کاربری</button>
-      </form>
-      <div id="form-feedback" class="feedback-msg"></div>
-    </section>
+    <!-- Right Column (Sidebar: 360px) -->
+    <div class="admin-sidebar">
+      <!-- 1. Create User Card -->
+      <section class="admin-card form-card">
+        <h2>تعریف همکار جدید</h2>
+        <p class="form-desc">همکاران با نام و رمز عددی ثبت‌شده در این بخش، امکان ورود به ماتریس را خواهند داشت.</p>
 
-    <!-- User List -->
+        <form id="create-user-form">
+          <div class="form-group">
+            <label for="input-persian-name">نام کاربری همکار:</label>
+            <input type="text" id="input-persian-name" placeholder="مثال: علیرضا یا سارا" required autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label for="input-numeric-pin">رمز عبور (فقط عدد - ۴ تا ۸ رقم):</label>
+            <input type="password" id="input-numeric-pin" inputmode="numeric" pattern="[0-9]*"
+                   placeholder="رمز عبور ۴ تا ۸ رقمی..." required autocomplete="off">
+          </div>
+          <button type="submit" id="btn-create-user" class="btn btn-primary" style="width: 100%;">ایجاد حساب کاربری
+          </button>
+        </form>
+        <div id="form-feedback" class="feedback-msg"></div>
+      </section>
+
+      <!-- 2. R&D / Internal Prototypes Card (No inline margin) -->
+      <section class="admin-card dev-tools-card">
+        <div class="dev-card-header">
+          <h2 class="dev-card-title">
+            <span class="dev-card-emoji">🧪</span>
+            <span>آزمایشگاه ابزارها و الگوریتم</span>
+          </h2>
+        </div>
+
+        <p class="form-desc" style="margin-bottom: 14px;">
+          صفحات آزمایشی نرم‌افزار پیش از انتقال به هسته اصلی:
+        </p>
+
+        <div class="dev-links-list">
+          <a href="/dev/weights-lab/" target="_blank" class="dev-tool-link">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="tool-icon">⚖️</span>
+              <div>
+                <strong class="tool-title" style="font-size: 0.86rem; color: var(--text-main); display: block;">آزمایشگاه
+                  ضرایب کاپ-داگلاس</strong>
+                <small style="font-size: 0.75rem; color: var(--text-muted);">تست تعاملی ۴ روش دریافت ضرایب α, β,
+                  γ</small>
+              </div>
+            </div>
+            <svg class="dev-link-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <line x1="7" y1="17" x2="17" y2="7"></line>
+              <polyline points="7 7 17 7 17 17"></polyline>
+            </svg>
+          </a>
+        </div>
+      </section>
+    </div>
+
+    <!-- Left Column (Main: 1fr) -->
     <section class="admin-card list-card">
       <div class="list-header">
         <h2>کاربران مجاز سامانه</h2>
@@ -100,10 +139,11 @@
         </table>
       </div>
     </section>
+
   </main>
 </div>
 
 <script src="/js/core.js"></script>
-<script src="/js/pages/admin.js"></script>
+<script src="script.js"></script>
 </body>
 </html>

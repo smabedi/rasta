@@ -1,0 +1,623 @@
+/* ==========================================================================
+   Rasta Weights Laboratory - Dedicated Modular Stylesheet
+   ========================================================================== */
+
+.lab-shell {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: var(--bg-main);
+    overflow-x: hidden;
+}
+
+.ambient-glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.55;
+}
+
+.glow-top {
+    width: 700px;
+    height: 380px;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, rgba(239, 246, 255, 0) 70%);
+}
+
+.lab-container {
+    position: relative;
+    z-index: 1;
+    max-width: 1240px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 40px 24px 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+/* 1. Header & Live Indicator Ribbon */
+.lab-header {
+    text-align: center;
+    max-width: 820px;
+    margin: 0 auto;
+}
+
+.lab-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 14px;
+    background: rgba(239, 246, 255, 0.95);
+    border: 1px solid var(--primary-border);
+    color: #1e40af;
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 14px;
+}
+
+.lab-badge-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: var(--primary);
+}
+
+.lab-title {
+    font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+    font-weight: 900;
+    color: var(--text-main);
+    margin: 0 0 10px;
+    line-height: 1.35;
+}
+
+.lab-desc {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    line-height: 1.8;
+    margin: 0;
+}
+
+/* Global Status Banner (Synced Formula Weights) */
+.live-weights-banner {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    background: var(--surface);
+    padding: 16px 20px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-card);
+}
+
+.weight-metric-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 12px;
+    background: #f8fafc;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-light);
+}
+
+.weight-metric-card.balanced-card {
+    border-right: 3px solid #16a34a;
+}
+
+.weight-metric-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-xs);
+    background: var(--primary-subtle);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.weight-metric-icon.sum-icon {
+    background: #dcfce7;
+    color: #16a34a;
+    font-weight: 900;
+    font-size: 1.15rem;
+}
+
+.weight-metric-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.weight-metric-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.metric-val-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.weight-metric-val {
+    font-size: 1.28rem;
+    font-weight: 900;
+    color: var(--text-main);
+    letter-spacing: normal;
+}
+
+.weight-metric-percent {
+    font-size: 0.82rem;
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.weight-metric-percent.sum-pct {
+    color: #16a34a;
+}
+
+/* 2. Interactive Inputs Grid (The 4 Approaches) */
+.approaches-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+
+@media (max-width: 960px) {
+    .approaches-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.approach-card {
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+    padding: 24px;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    position: relative;
+}
+
+.approach-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 14px;
+}
+
+.approach-title-group {
+    flex: 1;
+}
+
+/* Guaranteed Single-Line Badge Tags */
+.approach-tag {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--primary);
+    background: var(--primary-subtle);
+    padding: 4px 12px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--primary-border);
+    white-space: nowrap !important;
+    flex-shrink: 0;
+    line-height: 1.3;
+}
+
+.approach-title {
+    font-size: 1.12rem;
+    font-weight: 800;
+    margin: 0 0 4px;
+    color: var(--text-main);
+}
+
+.approach-summary {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* Approach 1: Presets */
+.preset-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.preset-btn {
+    background: #f8fafc;
+    border: 2px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 14px 12px;
+    text-align: right;
+    cursor: pointer;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-family: inherit;
+}
+
+.preset-btn:hover {
+    border-color: var(--primary-border);
+    background: var(--primary-subtle);
+}
+
+.preset-btn.active {
+    border-color: var(--primary);
+    background: #ffffff;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.14);
+}
+
+.preset-name {
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.preset-weights {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+/* Approach 2: Sliders */
+.slider-group {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.slider-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.slider-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.86rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.slider-meta-val {
+    font-size: 0.84rem;
+    color: var(--primary);
+    font-weight: 800;
+    background: var(--primary-subtle);
+    padding: 2px 8px;
+    border-radius: var(--radius-xs);
+    min-width: 32px;
+    text-align: center;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 7px;
+    border-radius: var(--radius-full);
+    background: #e2e8f0;
+    outline: none;
+    cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.4);
+    transition: transform 0.1s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+}
+
+/* Approach 3: Token Budget */
+.token-budget-bar {
+    background: #f1f5f9;
+    padding: 10px 14px;
+    border-radius: var(--radius-xs);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.budget-remaining {
+    color: var(--primary);
+    background: #ffffff;
+    padding: 3px 12px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-subtle);
+    font-weight: 800;
+}
+
+.stepper-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.stepper-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: #f8fafc;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-light);
+}
+
+.stepper-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.stepper-sub {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.stepper-ctrl {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-stepper {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-xs);
+    border: 1px solid var(--border-subtle);
+    background: #ffffff;
+    color: var(--text-main);
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-stepper:hover:not(:disabled) {
+    background: var(--primary-subtle);
+    border-color: var(--primary-border);
+    color: var(--primary);
+}
+
+.btn-stepper:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    background: #f1f5f9;
+}
+
+.stepper-display {
+    min-width: 28px;
+    text-align: center;
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: var(--text-main);
+}
+
+/* Approach 4: Ternary Simplex Triangle */
+.triangle-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+    touch-action: none;
+}
+
+.ternary-svg {
+    width: 320px;
+    height: 270px;
+    overflow: visible;
+    cursor: crosshair;
+}
+
+.triangle-base {
+    fill: #f8fafc;
+    stroke: var(--border-active);
+    stroke-width: 2;
+    stroke-linejoin: round;
+}
+
+.triangle-grid {
+    stroke: #e2e8f0;
+    stroke-width: 1;
+    stroke-dasharray: 3 3;
+}
+
+.triangle-vertex-label {
+    font-family: var(--font-main), serif;
+    font-size: 12px;
+    font-weight: 800;
+    fill: var(--text-main);
+    text-anchor: middle;
+}
+
+.triangle-puck {
+    fill: var(--primary);
+    stroke: #ffffff;
+    stroke-width: 3px;
+    cursor: grab;
+    filter: drop-shadow(0 4px 10px rgba(37, 99, 235, 0.45));
+    transition: r 0.15s ease;
+}
+
+.triangle-puck:active {
+    cursor: grabbing;
+    r: 10px;
+}
+
+.triangle-hint {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+}
+
+/* 3. Live Ranking Proof Box & KaTeX Card */
+.simulation-card {
+    background: var(--surface);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+    padding: 24px;
+    box-shadow: var(--shadow-card);
+}
+
+.simulation-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.simulation-title-group {
+    flex: 1;
+}
+
+.simulation-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin: 0 0 4px;
+    color: var(--text-main);
+}
+
+.simulation-desc {
+    font-size: 0.84rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* Polished KaTeX Formula Display */
+.simulation-formula-box {
+    background: #f8fafc;
+    border: 1px solid var(--border-subtle);
+    padding: 6px 18px;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-subtle);
+    color: var(--text-main);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    direction: ltr;
+}
+
+.candidate-rank-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.candidate-choice-card {
+    background: #ffffff;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: var(--shadow-subtle);
+    position: relative;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+}
+
+.candidate-choice-card.rank-1 {
+    border-color: #22c55e;
+    background: #f0fdf4;
+}
+
+.choice-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.choice-rank-badge {
+    font-size: 0.78rem;
+    font-weight: 900;
+    color: #ffffff;
+    background: var(--text-muted);
+    padding: 2px 8px;
+    border-radius: var(--radius-xs);
+}
+
+.candidate-choice-card.rank-1 .choice-rank-badge {
+    background: #16a34a;
+}
+
+.choice-title {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 0;
+}
+
+.choice-meta {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin: 2px 0 0;
+}
+
+.choice-ratings {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.76rem;
+    color: var(--text-light);
+    background: rgba(255, 255, 255, 0.85);
+    padding: 6px 10px;
+    border-radius: var(--radius-xs);
+    border: 1px solid var(--border-light);
+}
+
+.choice-utility {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px dashed var(--border-subtle);
+    padding-top: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.utility-score {
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: var(--primary);
+}
