@@ -6,7 +6,7 @@
     <title>رستا | ۴۰۳ - دسترسی غیرمجاز</title>
     <!--#include virtual="/includes/favicons.html" -->
     <link rel="stylesheet" href="/css/global.css">
-    <link rel="stylesheet" href="/css/pages/error.css">
+    <link rel="stylesheet" href="css/error.css">
 </head>
 <body>
 <div class="error-page-shell">

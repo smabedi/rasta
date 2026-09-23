@@ -82,7 +82,7 @@ $$U(u, m) = (R_m)^\alpha \cdot (R_u)^\beta \cdot (C_{\text{city}(u)})^\gamma$$
 
 ## 🏗️ Technical Architecture
 
-* **Client Layer (`/css`, `/js`, `/management`, `/includes`):** Modular separation between authentication bridges (`core.js`), view controllers (`major-matrix.js`, `admin.js`), shared SSI partials (`header.html`, `footer.html`), and global design tokens (`global.css`).
+* **Client Layer (`/css`, `/js`, `/management`, `/includes`):** Modular separation between authentication bridges (`core.js`), view controllers (`script.js`, `script.js`), shared SSI partials (`header.html`, `footer.html`), and global design tokens (`global.css`).
 * **Data Store (`/data`):** Normalized catalogs for universities (`universities.json`) and stream majors (`majors_*.json`), backed by versioned user matrix files under `/data/matrices/`.
 * **Backend REST API (`api.php`):** Lightweight, zero-dependency PHP service providing authenticated REST endpoints for matrix persistence, collaborator management, and PIN-based auth.
 * **Web Server & Routing (`.htaccess`, `router.php`):** Production Apache configuration with HTTPS enforcement, MIME caching, SSI activation, and data directory blocking (`[F]`), alongside a built-in development router for local execution.

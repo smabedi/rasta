@@ -68,7 +68,7 @@ a {
     text-decoration: none;
 }
 
-/* 2 Brand Logotype (Pure Vector Stencil via Mask) */
+/* 3. Brand Logotype (Pure Vector Stencil via Mask) */
 .brand-logotype {
     display: inline-block;
     background-color: currentColor;
@@ -166,7 +166,6 @@ a {
     text-align: center;
 }
 
-/* Rounded rectangle back/close button matching website styles */
 .modal-close-btn {
     position: absolute;
     top: 14px;
@@ -255,7 +254,6 @@ a {
     opacity: 0;
 }
 
-/* Status variants */
 .toast-success {
     border-right-color: #16a34a;
 }
@@ -372,7 +370,7 @@ a {
     flex: 1;
 }
 
-/* 8. Shared Full-Bleed Navigation Bar (Landing, Errors & Public Views) */
+/* 8. Shared Full-Bleed Navigation Bar (Brand Micro-Interactions) */
 .navbar-fullwidth {
     width: 100%;
     border-bottom: 1px solid rgba(226, 232, 240, 0.85);
@@ -397,12 +395,16 @@ a {
     display: flex;
     align-items: center;
     gap: 12px;
+    text-decoration: none;
+    cursor: pointer;
+    user-select: none;
 }
 
 .navbar-fullwidth .brand .brand-logotype {
     height: 20px;
     color: var(--text-main);
     transform: translateY(2px);
+    transition: color 0.18s ease;
 }
 
 .brand-divider {
@@ -425,6 +427,24 @@ a {
     flex-shrink: 0;
     border-radius: var(--radius-sm);
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease;
+}
+
+.navbar-fullwidth .brand:hover .logo-mark {
+    transform: rotate(-45deg) scale(0.9);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); /* playful overshooting snap */
+    box-shadow: 0 10px 25px -4px rgba(37, 99, 235, 0.5);
+}
+
+.navbar-fullwidth .brand:hover .brand-logotype {
+    color: var(--primary);
+}
+
+/* Tactile press response */
+.navbar-fullwidth .brand:active .logo-mark {
+    transform: rotate(-45deg) scale(0.82);
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+    transition: transform 0.08s ease;
 }
 
 .nav-actions {
@@ -470,8 +490,7 @@ a {
     color: var(--primary);
 }
 
-
-/* 9. Shared Full-Bleed Modern Footer */
+/* 9. Shared Full-Bleed Modern Footer (Brand Micro-Interactions) */
 .footer-fullwidth {
     width: 100%;
     border-top: 1px solid var(--border-subtle);
@@ -516,10 +535,13 @@ a {
 }
 
 .footer-brand {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
     margin-bottom: 14px;
+    text-decoration: none;
+    cursor: pointer;
+    width: fit-content;
 }
 
 .logo-mark-sm {
@@ -528,12 +550,30 @@ a {
     display: block;
     flex-shrink: 0;
     border-radius: var(--radius-xs);
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), filter 0.2s ease;
 }
 
 .footer-brand .brand-logotype {
     height: 18px;
     color: var(--text-main);
     transform: translateY(2px);
+    transition: color 0.18s ease;
+}
+
+/* Optical alignment preserved during footer hover */
+.footer-brand:hover .logo-mark-sm {
+    transform: rotate(-45deg) scale(0.9);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); /* playful overshooting snap */
+    filter: drop-shadow(0 4px 10px rgba(37, 99, 235, 0.3));
+}
+
+.footer-brand:hover .brand-logotype {
+    color: var(--primary);
+}
+
+.footer-brand:active .logo-mark-sm {
+    transform: rotate(-45deg) scale(0.82);
+    transition: transform 0.08s ease;
 }
 
 .footer-mission {
