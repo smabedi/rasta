@@ -323,7 +323,7 @@
     animation: heroElementEntrance 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.32s backwards;
 }
 
-/* Primary CTA & Vector Arrow */
+/* --- Primary Hero CTA & Status Badge --- */
 .hero-actions {
     display: flex;
     flex-direction: column;
@@ -333,40 +333,65 @@
     animation: heroElementEntrance 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.42s backwards;
 }
 
+/* --- Flat Hero CTA Button --- */
 .btn-hero-primary {
-    height: 52px;
-    padding: 0 34px;
-    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-    color: #ffffff;
-    border-radius: var(--radius-sm);
-    font-size: 1.05rem;
-    font-weight: 700;
+    position: relative;
+    height: 50px;
+    padding-right: 34px;
+    padding-left: 22px;
     display: inline-flex;
     align-items: center;
-    gap: 12px;
-    box-shadow: 0 8px 24px -4px rgba(37, 99, 235, 0.45);
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    justify-content: center;
+    gap: 10px;
+    background-color: var(--primary-light);
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 1.05rem;
+    font-weight: 700;
+    border: none;
+    border-radius: var(--radius-sm, 10px);
+    cursor: pointer;
+    user-select: none;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.04);
+    transition: background-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
     text-decoration: none;
 }
 
 .btn-hero-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 30px -4px rgba(37, 99, 235, 0.55);
+    background-color: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.08), 0 6px 14px rgba(15, 23, 42, 0.06);
+}
+
+.btn-hero-primary:active {
+    background-color: #1e40af;
+    transform: translateY(0) scale(0.985);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+.btn-hero-text {
+    position: relative;
+    z-index: 1;
+    line-height: 1;
+    transform: translateY(1px);
 }
 
 .btn-arrow-icon {
-    width: 20px;
-    height: 20px;
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    z-index: 1;
+    width: 17px;
+    height: 17px;
     flex-shrink: 0;
+    display: block;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .btn-hero-primary:hover .btn-arrow-icon {
-    transform: translateX(-5px);
+    transform: translateX(-3px);
 }
 
 .hero-status-pill {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
     font-size: 0.82rem;
@@ -428,33 +453,6 @@
     line-height: 1.6;
 }
 
-/* Ambient Radial Glows */
-.ambient-glow {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(120px);
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.65;
-}
-
-.glow-top {
-    width: 650px;
-    height: 380px;
-    top: -120px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: radial-gradient(circle, rgba(37, 99, 235, 0.16) 0%, rgba(239, 246, 255, 0) 70%);
-}
-
-.glow-bottom {
-    width: 500px;
-    height: 320px;
-    bottom: 50px;
-    right: -100px;
-    background: radial-gradient(circle, rgba(147, 197, 253, 0.14) 0%, rgba(255, 255, 255, 0) 70%);
-}
-
 @media (prefers-reduced-motion: reduce) {
     .ambient-glow,
     .hero-badge,
@@ -478,4 +476,209 @@
     .landing-page-shell .navbar-fullwidth .brand-logotype {
         transform: translateY(2px) !important;
     }
+}
+
+/* Modal Backdrop */
+.auth-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 1rem;
+}
+
+.auth-modal-card {
+    background-color: var(--surface);
+    border-radius: 14px;
+    width: 100%;
+    max-width: 480px;
+    /* Caps modal to 90% viewport height and enables elastic flex layout */
+    max-height: min(90dvh, 720px);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.auth-card-header {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+}
+.auth-title { font-size: 1.15rem; font-weight: 700; margin: 0; }
+.auth-subtitle { font-size: 0.825rem; color: #64748b; margin: 0.25rem 0 0; }
+.auth-close-btn {
+    background: none; border: none; font-size: 1.5rem; line-height: 1;
+    color: #94a3b8; cursor: pointer; padding: 0.25rem;
+}
+.auth-close-btn:hover { color: #0f172a; }
+
+/* Nav Tabs */
+.auth-nav-tabs {
+    flex-shrink: 0;
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background-color: var(--bg-main);
+}
+.auth-nav-btn {
+    flex: 1;
+    padding: 0.75rem 0.5rem;
+    font-size: 0.85rem;
+    font-family: inherit;
+    font-weight: 500;
+    border: none;
+    background: none;
+    color: #64748b;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s ease;
+}
+.auth-nav-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    background-color: var(--surface);
+    font-weight: 600;
+}
+
+/* Scrollable Form Body */
+.auth-pane {
+    display: none;
+    padding: 1.25rem 1.5rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+.auth-pane.active { display: block; }
+
+/* Subtle Webkit Scrollbar */
+.auth-pane::-webkit-scrollbar {
+    width: 5px;
+}
+.auth-pane::-webkit-scrollbar-track {
+    background: transparent;
+}
+.auth-pane::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 9999px;
+}
+.auth-pane::-webkit-scrollbar-thumb:hover {
+    background-color: #94a3b8;
+}
+
+/* Forms & Choice Pills */
+.form-group { margin-bottom: 0.85rem; }
+.form-row { display: flex; gap: 0.75rem; }
+.col-6 { flex: 1; }
+
+/* Asymmetrical OTP & Password Row */
+#candOtpGroup,
+#instOtpGroup {
+    flex: 0 0 125px; /* Compact dedicated width for 5-digit code */
+}
+#candOtpGroup + .col-6,
+#instOtpGroup + .col-6 {
+    flex: 1; /* Password input expands to fill all remaining width */
+}
+
+/* Ensure OTP inputs have identical visuals */
+#candOtpCode,
+#instOtpCode {
+    font-family: inherit;
+    font-size: 0.9rem;
+    letter-spacing: normal;
+    text-align: center;
+}
+
+.form-label { display: block; font-size: 0.825rem; font-weight: 600; margin-bottom: 0.35rem; }
+.form-control {
+    width: 100%;
+    height: 42px;
+    padding: 0.6rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-family: inherit;
+    font-size: 0.9rem;
+    outline: none;
+    box-sizing: border-box;
+}
+.form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2); }
+.form-control.uppercase { text-transform: uppercase; }
+
+.segmented-choice {
+    display: flex;
+    gap: 0.5rem;
+    background: #f1f5f9;
+    padding: 0.25rem;
+    border-radius: 8px;
+}
+.choice-pill, .switch-chip {
+    flex: 1;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+}
+.choice-pill input, .switch-chip input { display: none; }
+.choice-pill span, .switch-chip span {
+    display: block;
+    padding: 0.38rem 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+}
+.choice-pill input:checked + span, .switch-chip input:checked + span {
+    background-color: #ffffff;
+    color: var(--primary);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    font-weight: 700;
+}
+
+.auth-login-type-switch {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.15rem;
+}
+
+.input-with-button { display: flex; gap: 0.5rem; }
+.auth-alert-box {
+    margin: 1rem 1.5rem 0;
+    padding: 0.65rem 0.85rem;
+    border-radius: 6px;
+    font-size: 0.825rem;
+    background-color: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+.badge-verification {
+    font-size: 0.8rem;
+    margin-top: 0.35rem;
+    font-weight: 600;
+}
+.badge-verification.valid { color: #15803d; }
+.badge-verification.invalid { color: #b91c1c; }
+
+.auth-link-text {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--primary);
+    font-size: 0.8rem;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.15s ease;
+}
+.auth-link-text:hover {
+    text-decoration: underline;
+    opacity: 0.85;
 }

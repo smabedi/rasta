@@ -3,144 +3,286 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>رستا | مدیریت دسترسی‌ها (پنل ادمین)</title>
-  <!--#include virtual="/includes/favicons.html" -->
-  <link rel="stylesheet" href="/css/global.css">
+  <title>پنل مدیریت سامانه رستا</title>
+  <link rel="stylesheet" href="../../css/global.css">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
-<div class="admin-wrapper">
-  <header class="admin-topbar">
-    <div class="brand">
-      <a href="/" class="nav-back-link" title="بازگشت به سامانه رستا">
-        <span class="brand-logotype" style="height: 16px;"></span>
-      </a>
-      <span class="badge">مدیریت کاربران و دسترسی</span>
-    </div>
-    <div class="actions">
-      <a href="/management/major-matrix/" class="btn btn-outline">ورود به محیط ماتریس</a>
-      <button id="btn-admin-logout" class="btn btn-outline hidden">خروج از مدیریت</button>
-    </div>
-  </header>
+<body class="admin-body">
 
-  <!-- View 1: First-Time Setup (Shown ONLY if no admin exists) -->
-  <div id="admin-setup-view" class="admin-gate-card hidden">
-    <h2>راه‌اندازی اولیه مدیر ارشد</h2>
-    <p>سامانه برای نخستین بار اجرا شده است. لطفاً نام و رمز عبور مدیر اصلی را تعیین کنید:</p>
-    <form id="admin-setup-form">
-      <div class="form-group">
-        <label for="setup-user-input">نام مدیر (فارسی یا انگلیسی):</label>
-        <input type="text" id="setup-user-input" placeholder="مثال: مدیریت سامانه" required autocomplete="off">
-      </div>
-      <div class="form-group">
-        <label for="setup-pin-input">رمز عبور عددی (حداقل ۴ رقم):</label>
-        <input type="password" id="setup-pin-input" inputmode="numeric" pattern="[0-9]*" placeholder="رمز عبور عددی..." required autocomplete="off">
-      </div>
-      <button type="submit" class="btn btn-primary" style="width: 100%;">ثبت و ایجاد دسترسی اصلی</button>
-    </form>
-    <div id="admin-setup-error" class="feedback-msg error"></div>
+<!-- Top Navigation -->
+<header class="admin-header">
+  <div class="header-right">
+    <a href="/" class="header-logo" title="سامانه رستا">
+      <img src="../../assets/images/merged-rasta-logo.svg" alt="رستا">
+    </a>
+    <div class="header-meta">
+      <span class="brand-divider"></span>
+      <span class="brand-title">پنل مدیریت</span>
+      <span id="currentAdminName" class="badge-role">در حال بارگذاری...</span>
+    </div>
   </div>
-
-  <!-- View 2: Standard Admin Login -->
-  <div id="admin-gate-view" class="admin-gate-card hidden">
-    <h2>ورود به پنل مدیریت</h2>
-    <p>جهت مدیریت اعضا، با مشخصات مدیر ارشد وارد شوید:</p>
-    <form id="admin-login-form">
-      <div class="form-group">
-        <label for="admin-user-input">نام کاربری مدیر:</label>
-        <input type="text" id="admin-user-input" placeholder="نام کاربری..." required autocomplete="off">
-      </div>
-      <div class="form-group">
-        <label for="admin-pin-input">رمز عبور عددی:</label>
-        <input type="password" id="admin-pin-input" inputmode="numeric" placeholder="رمز عبور..." required autocomplete="off">
-      </div>
-      <button type="submit" class="btn btn-primary" style="width: 100%;">ورود به پنل</button>
-    </form>
-    <div id="admin-login-error" class="feedback-msg error"></div>
+  <div class="header-actions">
+    <button id="logoutBtn" class="btn btn-secondary btn-sm">خروج از حساب</button>
   </div>
+</header>
 
-  <!-- View 3: Authenticated Management Workspace -->
-  <main id="admin-workspace-view" class="admin-main hidden">
+<!-- Main Workspace -->
+<main class="admin-container">
+  <!-- Metric Cards -->
+  <section class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">کل کاربران</div>
+      <div id="statTotalUsers" class="stat-value">۰</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">داوطلبان آزمون</div>
+      <div id="statTotalStudents" class="stat-value">۰</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">مراکز و مدارس همکار</div>
+      <div id="statTotalInstitutes" class="stat-value">۰</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">چینش‌های تدوین‌شده</div>
+      <div id="statTotalSlots" class="stat-value">۰</div>
+    </div>
+  </section>
 
-    <!-- Right Column (Sidebar: 360px) -->
-    <div class="admin-sidebar">
-      <!-- 1. Create User Card -->
-      <section class="admin-card form-card">
-        <h2>تعریف همکار جدید</h2>
-        <p class="form-desc">همکاران با نام و رمز عددی ثبت‌شده در این بخش، امکان ورود به ماتریس را خواهند داشت.</p>
+  <!-- Navigation Tabs -->
+  <nav class="admin-tabs">
+    <button class="tab-btn active" data-tab="users">مدیریت کاربران و داوطلبان</button>
+    <button class="tab-btn" data-tab="institutes">مراکز آموزشی و کدهای پیوند</button>
+    <button class="tab-btn" data-tab="labs">آزمایشگاه و ابزارها</button>
+  </nav>
 
-        <form id="create-user-form">
-          <div class="form-group">
-            <label for="input-persian-name">نام کاربری همکار:</label>
-            <input type="text" id="input-persian-name" placeholder="مثال: علیرضا یا سارا" required autocomplete="off">
-          </div>
-          <div class="form-group">
-            <label for="input-numeric-pin">رمز عبور (فقط عدد - ۴ تا ۸ رقم):</label>
-            <input type="password" id="input-numeric-pin" inputmode="numeric" pattern="[0-9]*"
-                   placeholder="رمز عبور ۴ تا ۸ رقمی..." required autocomplete="off">
-          </div>
-          <button type="submit" id="btn-create-user" class="btn btn-primary" style="width: 100%;">ایجاد حساب کاربری
-          </button>
-        </form>
-        <div id="form-feedback" class="feedback-msg"></div>
-      </section>
-
-      <!-- 2. R&D / Internal Prototypes Card (No inline margin) -->
-      <section class="admin-card dev-tools-card">
-        <div class="dev-card-header">
-          <h2 class="dev-card-title">
-            <span class="dev-card-emoji">🧪</span>
-            <span>آزمایشگاه ابزارها و الگوریتم</span>
-          </h2>
-        </div>
-
-        <p class="form-desc" style="margin-bottom: 14px;">
-          صفحات آزمایشی نرم‌افزار پیش از انتقال به هسته اصلی:
-        </p>
-
-        <div class="dev-links-list">
-          <a href="/dev/weights-lab/" target="_blank" class="dev-tool-link">
-            <div style="display: flex; align-items: center; gap: 10px;">
-              <span class="tool-icon">⚖️</span>
-              <div>
-                <strong class="tool-title" style="font-size: 0.86rem; color: var(--text-main); display: block;">آزمایشگاه
-                  ضرایب کاپ-داگلاس</strong>
-                <small style="font-size: 0.75rem; color: var(--text-muted);">تست تعاملی ۴ روش دریافت ضرایب α, β,
-                  γ</small>
-              </div>
-            </div>
-            <svg class="dev-link-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                 stroke-linecap="round" stroke-linejoin="round">
-              <line x1="7" y1="17" x2="17" y2="7"></line>
-              <polyline points="7 7 17 7 17 17"></polyline>
-            </svg>
-          </a>
-        </div>
-      </section>
+  <!-- Tab 1: Users -->
+  <section id="tabUsers" class="tab-content active">
+    <div class="table-controls">
+      <div class="control-group">
+        <input type="text" id="userSearchInput" class="input-text" placeholder="جستجو بر اساس نام یا شماره تلفن...">
+        <select id="roleFilterSelect" class="input-select">
+          <option value="">همه نقش‌ها</option>
+          <option value="student_independent">داوطلب آزاد</option>
+          <option value="student_affiliated">داوطلب آموزشگاهی</option>
+          <option value="institute">مشاور مرکز</option>
+          <option value="admin">مدیر سامانه</option>
+        </select>
+      </div>
+      <button id="openNewUserModalBtn" class="btn btn-primary">+ ثبت کاربر جدید</button>
     </div>
 
-    <!-- Left Column (Main: 1fr) -->
-    <section class="admin-card list-card">
-      <div class="list-header">
-        <h2>کاربران مجاز سامانه</h2>
-        <span id="user-count-badge" class="count-pill">۰ کاربر</span>
-      </div>
-      <div class="table-container">
-        <table class="user-table">
-          <thead>
-          <tr>
-            <th>نام کاربری</th>
-            <th>سطح دسترسی</th>
-            <th>تاریخ ایجاد</th>
-            <th>عملیات</th>
-          </tr>
-          </thead>
-          <tbody id="user-table-body"></tbody>
-        </table>
-      </div>
-    </section>
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+        <tr>
+          <th>شناسه</th>
+          <th>نام و نام خانوادگی</th>
+          <th>شماره تماس</th>
+          <th>نقش کاربری</th>
+          <th>جنسیت</th>
+          <th>گروه آزمایشی</th>
+          <th>سال کنکور</th>
+          <th>آموزشگاه</th>
+          <th>چینش‌ها</th>
+          <th>عملیات</th>
+        </tr>
+        </thead>
+        <tbody id="usersTableBody">
+        <tr><td colspan="10" class="text-center">در حال بارگذاری اطلاعات کاربران...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 
-  </main>
+  <!-- Tab 2: Institutes -->
+  <section id="tabInstitutes" class="tab-content">
+    <div class="table-controls">
+      <div class="control-group">
+        <input type="text" id="instituteSearchInput" class="input-text" placeholder="جستجوی نام مرکز یا کد پیوند...">
+      </div>
+      <button id="openNewInstituteModalBtn" class="btn btn-primary">+ ثبت مرکز همکار جدید</button>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+        <tr>
+          <th>شناسه</th>
+          <th>نام مرکز / مدرسه</th>
+          <th>کد پیوند اختصاصی</th>
+          <th>شماره تماس</th>
+          <th>داوطلبان متصل</th>
+          <th>تاریخ ثبت</th>
+          <th>عملیات</th>
+        </tr>
+        </thead>
+        <tbody id="institutesTableBody">
+        <tr><td colspan="7" class="text-center">در حال بارگذاری مراکز...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Tab 3: Laboratories & Dev Tools -->
+  <section id="tabLabs" class="tab-content">
+    <div class="labs-grid">
+      <div class="lab-card">
+        <div class="lab-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 3h6m-5 0v5.5a1 1 0 0 1-.2.6l-5.3 7.9A2 2 0 0 0 6.2 20h11.6a2 2 0 0 0 1.7-3l-5.3-7.9a1 1 0 0 1-.2-.6V3"/>
+            <line x1="8" y1="14" x2="16" y2="14"/>
+          </svg>
+        </div>
+        <div class="lab-info">
+          <h3>آزمایشگاه اوزان کاپ-داگلاس (Weights Lab)</h3>
+          <p>شبیه‌ساز و ابزار کالیبراسیون توابع مطلوبیت چندمعیاره، آزمون ضرایب ترم (بهمن) و تعهد خدمت مناطق محروم.</p>
+        </div>
+        <a href="../../dev/weights-lab/" target="_blank" class="btn btn-primary btn-sm btn-icon">
+          <span>ورود به محیط آزمایشگاه</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Modal: Auth / Login / First Run Bootstrap -->
+<div id="authModal" class="modal-backdrop">
+  <div class="modal-box">
+    <h2 id="authModalTitle">ورود به پنل مدیریت رستا</h2>
+    <p id="authModalDesc" class="modal-desc">برای دسترسی به تنظیمات راهبردی، وارد حساب مدیریت خود شوید.</p>
+
+    <form id="authForm" class="modal-form">
+      <div class="form-field" id="bootstrapNameField" style="display: none;">
+        <label>نام و نام خانوادگی مدیر</label>
+        <input type="text" id="authFullName" class="input-text" placeholder="مثال: علیرضا محمدی">
+      </div>
+      <div class="form-field">
+        <label>شماره تلفن همراه</label>
+        <input type="tel" id="authPhone" class="input-text" placeholder="09123456789" required>
+      </div>
+      <div class="form-field">
+        <label>رمز عبور</label>
+        <input type="password" id="authPassword" class="input-text" placeholder="حداقل ۶ نویسه" required>
+      </div>
+      <div id="authErrorMsg" class="form-error"></div>
+
+      <!-- Side-by-side action row -->
+      <div class="auth-actions" style="display: flex; gap: 0.75rem; margin-top: 0.25rem;">
+        <button type="submit" id="authSubmitBtn" class="btn btn-primary" style="flex: 1; height: 42px;">
+          ورود به پنل
+        </button>
+        <a href="/" class="btn btn-secondary text-center" style="flex: 1; height: 42px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
+          بازگشت به صفحه اصلی
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Create / Edit User -->
+<div id="userModal" class="modal-backdrop" style="display: none;">
+  <div class="modal-box">
+    <h2 id="userModalTitle">ثبت کاربر جدید</h2>
+    <form id="userForm" class="modal-form">
+      <input type="hidden" id="userEditId">
+
+      <div class="form-field">
+        <label for="formUserFullName">نام و نام خانوادگی</label>
+        <input type="text" id="formUserFullName" class="input-text" placeholder="مثال: علی اکبری" required>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label for="formUserPhone">شماره همراه</label>
+          <input type="tel" id="formUserPhone" class="input-text" placeholder="09123456789" required dir="ltr">
+        </div>
+        <div class="form-field">
+          <label for="formUserPassword">رمز عبور <small id="pwdHint" style="color: var(--text-muted);">(حداقل ۶ نویسه)</small></label>
+          <input type="password" id="formUserPassword" class="input-text" dir="ltr">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-field">
+          <label for="formUserRole">نقش کاربری</label>
+          <select id="formUserRole" class="input-select" required>
+            <option value="student_independent">داوطلب آزاد</option>
+            <option value="student_affiliated">داوطلب آموزشگاهی</option>
+            <option value="institute">مشاور مرکز</option>
+            <option value="admin">مدیر سامانه</option>
+          </select>
+        </div>
+        <div class="form-field" id="fieldUserGender">
+          <label for="formUserGender">جنسیت</label>
+          <select id="formUserGender" class="input-select">
+            <option value="male">مرد</option>
+            <option value="female">زن</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row" id="fieldCandidateCohort">
+        <div class="form-field">
+          <label for="formUserStream">گروه آزمایشی</label>
+          <select id="formUserStream" class="input-select">
+            <option value="math">علوم ریاضی</option>
+            <option value="experimental">علوم تجربی</option>
+            <option value="humanities">علوم انسانی</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="formUserAcademicYear">سال تحصیلی کنکور</label>
+          <select id="formUserAcademicYear" class="input-select">
+            <option value="04-05">۱۴۰۴ – ۱۴۰۵ (کنکور جاری)</option>
+            <option value="05-06">۱۴۰۵ – ۱۴۰۶</option>
+            <option value="03-04">۱۴۰۳ – ۱۴۰۴ (پشت کنکور)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-field" id="formUserInstituteGroup" style="display: none;">
+        <label for="formUserInstitute">آموزشگاه یا مرکز همکار</label>
+        <select id="formUserInstitute" class="input-select">
+          <option value="">بدون مرکز (مستقل)</option>
+        </select>
+      </div>
+
+      <div id="userFormError" class="form-error"></div>
+
+      <div class="modal-actions">
+        <button type="button" id="closeUserModalBtn" class="btn btn-secondary">انصراف</button>
+        <button type="submit" class="btn btn-primary">ذخیره کاربر</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Create / Edit Institute -->
+<div id="instituteModal" class="modal-backdrop" style="display: none;">
+  <div class="modal-box">
+    <h2 id="instituteModalTitle">ثبت مرکز آموزشی جدید</h2>
+    <form id="instituteForm" class="modal-form">
+      <input type="hidden" id="instEditId">
+      <div class="form-field">
+        <label>نام آموزشگاه / مدرسه</label>
+        <input type="text" id="formInstName" class="input-text" placeholder="مثال: دبیرستان علامه حلی" required>
+      </div>
+      <div class="form-field">
+        <label>کد پیوند اختصاصی (اختیاری؛ خالی بگذارید تا خودکار ایجاد شود)</label>
+        <input type="text" id="formInstCode" class="input-text" placeholder="مثال: RASTA-TEH01">
+      </div>
+      <div class="form-field">
+        <label>شماره تماس مسئول / پشتیبانی (همراه با پیش‌شماره)</label>
+        <input type="tel" id="formInstPhone" class="input-text" placeholder="0xxxxxxxxxx">
+      </div>
+      <div id="instFormError" class="form-error"></div>
+      <div class="modal-actions">
+        <button type="button" id="closeInstModalBtn" class="btn btn-secondary">انصراف</button>
+        <button type="submit" class="btn btn-primary">ذخیره مرکز</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script src="/js/core.js"></script>

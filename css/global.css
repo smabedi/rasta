@@ -26,6 +26,7 @@
     --bg-main: #f8fafc;
     --surface: #ffffff;
 
+    --border: #e2e8f0;
     --border-light: #f1f5f9;
     --border-subtle: #e2e8f0;
     --border-active: #cbd5e1;
@@ -35,6 +36,7 @@
     --text-light: #7e8b9a;
 
     --primary: #2563eb;
+    --primary-light: #2d6bf1;
     --primary-hover: #1d4ed8;
     --primary-subtle: #eff6ff;
     --primary-border: #bfdbfe;
@@ -698,4 +700,298 @@ a {
 /* LTR fallback if ever loaded inside an LTR context */
 html[dir="ltr"] #rasta-progress-bar .progress-fill {
     transform-origin: left center;
+}
+
+/* Site Header (Global SSI Component) */
+.site-header {
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--border-subtle);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+.header-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0.6rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.brand-link { display: flex; align-items: center; text-decoration: none; }
+.header-actions { display: flex; align-items: center; gap: 0.75rem; }
+
+/* --- User Session Badge & Custom Dropdown --- */
+.user-dropdown-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+/* Inherits exact height (40px), radius, background & shadow from .btn-auth-trigger */
+.user-dropdown-trigger {
+    position: relative;
+    padding: 0 14px;
+}
+
+.user-dropdown-name {
+    font-weight: 600;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.user-dropdown-role {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.user-dropdown-chevron {
+    flex-shrink: 0;
+    color: var(--text-muted);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), color 0.15s ease;
+}
+
+.user-dropdown-trigger:hover .user-dropdown-chevron,
+.user-dropdown-trigger[aria-expanded="true"] .user-dropdown-chevron {
+    color: var(--primary);
+}
+
+/* 180deg flip animation when menu is open */
+.user-dropdown-trigger[aria-expanded="true"] .user-dropdown-chevron {
+    transform: rotate(180deg);
+}
+
+/* Floating Dropdown Card */
+.user-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0; /* Aligns flush with the button's left edge, expanding safely inward */
+    min-width: 185px;
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm, 10px);
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+    padding: 6px;
+    display: none;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 1050;
+    animation: dropdownPopIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.user-dropdown-menu.active {
+    display: flex;
+}
+
+@keyframes dropdownPopIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.user-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: var(--radius-xs, 6px);
+    font-size: 0.86rem;
+    font-weight: 500;
+    color: var(--text-main);
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    width: 100%;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: right;
+    box-sizing: border-box;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.user-dropdown-item:hover {
+    background-color: #f1f5f9;
+    color: var(--primary);
+}
+
+.user-dropdown-item.text-danger {
+    color: #ef4444;
+}
+
+.user-dropdown-item.text-danger:hover {
+    background-color: #fef2f2;
+    color: #dc2626;
+}
+
+.dropdown-item-icon {
+    flex-shrink: 0;
+    color: currentColor;
+}
+
+.user-dropdown-divider {
+    height: 1px;
+    background-color: var(--border-subtle);
+    margin: 4px 6px;
+}
+
+/* Missing Button Utility Variants */
+.btn-block {
+    width: 100%;
+}
+.btn-secondary {
+    background: #e2e8f0;
+    color: #334155;
+    border-color: #cbd5e1;
+}
+.btn-secondary:hover {
+    background: #cbd5e1;
+}
+
+/* Fixed-width OTP countdown button */
+.btn-otp-action {
+    flex: 0 0 155px; /* Ample room for countdown without squishing phone input */
+    height: 42px;
+    padding: 0 8px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    font-family: inherit;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-otp-action:disabled {
+    cursor: not-allowed;
+    background-color: #f1f5f9;
+    color: #64748b;
+    border: 1px solid var(--border, #cbd5e1);
+    opacity: 0.85;
+}
+
+/* --- Professional Navbar Auth Trigger --- */
+.btn-auth-trigger {
+    height: 38px;
+    padding: 0 14px;
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-main);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+}
+
+.btn-auth-trigger:hover {
+    background: #f8fafc;
+    border-color: var(--border-active);
+    color: var(--primary);
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+}
+
+.btn-auth-trigger:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.auth-trigger-icon {
+    flex-shrink: 0;
+    color: var(--text-muted);
+    transition: color 0.18s ease;
+}
+
+.btn-auth-trigger:hover .auth-trigger-icon {
+    color: var(--primary);
+}
+
+.auth-trigger-text {
+    line-height: 1;
+}
+
+.auth-trigger-pipe {
+    display: inline-block;
+    width: 1px;
+    height: 13px;
+    background-color: var(--border-active);
+}
+
+/* Mobile safety for narrow viewports */
+@media (max-width: 640px) {
+    .brand-divider,
+    .brand-tagline {
+        display: none;
+    }
+}
+
+/* --- Universal Modern Select Dropdown Styling (RTL Native) --- */
+select,
+select.form-control,
+.input-select {
+    width: 100%;
+    height: 42px;
+    padding: 0.6rem 0.85rem 0.6rem 2.25rem; /* 2.25rem left padding clears the custom chevron in RTL */
+    font-family: inherit;
+    font-size: 0.9rem;
+    color: var(--text-main, #0f172a);
+    background-color: var(--surface, #ffffff);
+    border: 1px solid var(--border, #cbd5e1);
+    border-radius: 8px;
+    box-sizing: border-box;
+    cursor: pointer;
+    user-select: none;
+
+    /* Strip native browser dropdown arrows */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+
+    /* Embed custom crisp slate chevron */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left 0.85rem center;
+
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* Focused State */
+select:focus,
+select.form-control:focus,
+.input-select:focus {
+    outline: none;
+    border-color: var(--primary, #2563eb);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* Disabled State */
+select:disabled,
+select.form-control:disabled,
+.input-select:disabled {
+    background-color: #f1f5f9;
+    color: #94a3b8;
+    cursor: not-allowed;
+    opacity: 0.75;
+}
+
+/* Consistent Dropdown Options Styling */
+select option,
+.input-select option {
+    background-color: #ffffff;
+    color: #0f172a;
+    padding: 0.5rem;
 }

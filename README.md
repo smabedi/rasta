@@ -10,7 +10,7 @@
 
 <br/>
 
-[**Live Demo**](https://rasta.smabedi.ir) • [**Major Matrix Validator**](https://rasta.smabedi.ir/management/major-matrix/) • [**Report Bug / Feedback**](https://github.com/smabedi/rasta/issues)
+[**Live Demo**](https://rasta-app.ir) • [**Major Matrix Validator**](https://rasta-app.ir/management/major-matrix/) • [**Report Bug / Feedback**](https://github.com/smabedi/rasta/issues)
 
 <br/>
 

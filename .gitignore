@@ -11,10 +11,11 @@ tmp/
 *.bak
 
 # Matrix Exports & Local JSON Dumps
-/data/matrices/
-/data/users.json
-/data/presence.json
 *.export.json
+#/data/matrices/
+#/data/users.json
+/data/presence.json
+/data/rasta.sqlite
 
 # Windows system files
 Thumbs.db
