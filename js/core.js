@@ -292,26 +292,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /**
  * Rasta | Optimistic Top Loading Bar Engine
- * Decelerating trickle with automatic link interception and programmatic API.
+ * Continuous 60/120 FPS Asymptotic Physics with Cross-Page Relay
  */
 let RastaProgress = (() => {
     let barEl = null;
     let fillEl = null;
     let currentProgress = 0;
-    let trickleTimer = null;
+    let rafId = null;
+    let startTime = null;
     let isRunning = false;
 
+    // Physics parameters
+    const START_OFFSET = 0.14;   // Immediate tactile bite upon click
+    const ASYMPTOTE_MAX = 0.92;  // Ceiling it asymptotically approaches
+    const DECAY_RATE = 0.78;     // Speed multiplier (higher = faster early glide)
+
+    const STORAGE_KEY_ACTIVE = 'rasta_nav_active';
+    const STORAGE_KEY_VAL = 'rasta_nav_progress';
+
     function initDOM() {
-        if (document.getElementById('rasta-progress-bar')) return;
-
-        barEl = document.createElement('div');
-        barEl.id = 'rasta-progress-bar';
-
-        fillEl = document.createElement('div');
-        fillEl.className = 'progress-fill';
-
-        barEl.appendChild(fillEl);
-        document.body.appendChild(barEl);
+        if (barEl) return;
+        barEl = document.getElementById('rasta-progress-bar');
+        if (!barEl) {
+            barEl = document.createElement('div');
+            barEl.id = 'rasta-progress-bar';
+            fillEl = document.createElement('div');
+            fillEl.className = 'progress-fill';
+            barEl.appendChild(fillEl);
+            document.body.appendChild(barEl);
+        } else {
+            fillEl = barEl.querySelector('.progress-fill');
+        }
     }
 
     function set(val) {
@@ -320,52 +331,94 @@ let RastaProgress = (() => {
         fillEl.style.transform = `scaleX(${currentProgress})`;
     }
 
-    function trickle() {
-        if (currentProgress >= 0.95) return;
+    // Mathematical continuous deceleration: P(t) = Target - (Target - Start) * e^(-k * t)
+    function tickPhysics(timestamp) {
+        if (!isRunning) return;
+        if (!startTime) startTime = timestamp;
 
-        // Smaller, gentler increments to avoid jerky jumps
-        let step = 0;
-        if (currentProgress < 0.25) {
-            step = 0.08;
-        } else if (currentProgress < 0.55) {
-            step = 0.035;
-        } else if (currentProgress < 0.8) {
-            step = 0.015;
-        } else {
-            step = 0.004;
+        const elapsed = (timestamp - startTime) / 1000; // in seconds
+        const distance = ASYMPTOTE_MAX - START_OFFSET;
+
+        currentProgress = ASYMPTOTE_MAX - (distance * Math.exp(-DECAY_RATE * elapsed));
+        fillEl.style.transform = `scaleX(${currentProgress})`;
+
+        // Sync snapshot to sessionStorage every ~60ms for smooth cross-page handoff
+        if (Math.round(elapsed * 100) % 6 === 0) {
+            try {
+                sessionStorage.setItem(STORAGE_KEY_VAL, currentProgress.toString());
+            } catch (e) {}
         }
 
-        set(currentProgress + step);
-        trickleTimer = setTimeout(trickle, 240 + Math.random() * 60);
+        rafId = requestAnimationFrame(tickPhysics);
     }
 
     function start() {
         if (isRunning) return;
         isRunning = true;
-        clearTimeout(trickleTimer);
+        cancelAnimationFrame(rafId);
+        startTime = null;
 
         initDOM();
         barEl.classList.add('active');
-        set(0.15); // Instant optimistic start
-        trickleTimer = setTimeout(trickle, 100);
+
+        // Disable CSS transitions during the continuous RAF loop
+        fillEl.style.transition = 'none';
+        set(START_OFFSET);
+
+        rafId = requestAnimationFrame(tickPhysics);
     }
 
     function done() {
         if (!isRunning) return;
-        clearTimeout(trickleTimer);
-        set(1); // Glide to 100%
+        cancelAnimationFrame(rafId);
+        rafId = null;
 
-        // Allow 320ms for the smooth transform to actually complete before fading out
+        initDOM();
+
+        // Engage hardware-accelerated CSS ease exclusively for the final glide to 100%
+        fillEl.style.transition = 'transform 0.28s cubic-bezier(0.16, 1, 0.3, 1)';
+        set(1);
+
         setTimeout(() => {
             if (barEl) barEl.classList.remove('active');
             setTimeout(() => {
+                fillEl.style.transition = 'none';
                 set(0);
                 isRunning = false;
-            }, 350);
-        }, 320);
+                try {
+                    sessionStorage.removeItem(STORAGE_KEY_ACTIVE);
+                    sessionStorage.removeItem(STORAGE_KEY_VAL);
+                } catch (e) {}
+            }, 300);
+        }, 280);
     }
 
-    // Auto-intercept navigation clicks to show immediate tactile feedback
+    function checkPageRelay() {
+        let wasNavigating = false;
+        let savedProgress = 0.65;
+
+        try {
+            wasNavigating = sessionStorage.getItem(STORAGE_KEY_ACTIVE);
+            savedProgress = parseFloat(sessionStorage.getItem(STORAGE_KEY_VAL)) || 0.65;
+        } catch (e) {}
+
+        if (!wasNavigating) return;
+
+        isRunning = true;
+        initDOM();
+        barEl.classList.add('active');
+
+        // Mount instantly at the handoff point with zero jumping
+        fillEl.style.transition = 'none';
+        set(savedProgress);
+        void fillEl.offsetWidth; // Force reflow
+
+        // Glide across the final stretch to 100% on the newly arrived page
+        setTimeout(() => {
+            done();
+        }, 40);
+    }
+
     function bindNavigationListeners() {
         document.addEventListener('click', (e) => {
             const link = e.target.closest('a');
@@ -382,21 +435,16 @@ let RastaProgress = (() => {
                 return;
             }
 
-            // Don't trigger if modified click (opening in background tab)
             if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-
-            // Internal domain check
             if (link.origin && link.origin !== window.location.origin) return;
+
+            try {
+                sessionStorage.setItem(STORAGE_KEY_ACTIVE, '1');
+            } catch (e) {}
 
             start();
         });
 
-        // Flash complete on page load
-        window.addEventListener('load', () => {
-            done();
-        });
-
-        // Safety cleanup if user returns via back/forward cache
         window.addEventListener('pageshow', (event) => {
             if (event.persisted) done();
         });
@@ -409,11 +457,11 @@ let RastaProgress = (() => {
         init: () => {
             initDOM();
             bindNavigationListeners();
+            checkPageRelay();
         }
     };
 })();
 
-// Initialize automatically
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => RastaProgress.init());
 } else {
