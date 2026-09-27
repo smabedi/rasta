@@ -14,7 +14,7 @@ ErrorDocument 500 /500.shtml
     Options +Includes
 </FilesMatch>
 
-# Favicon Fallback for pages without explicit HTML link tags
+# Favicon Fallback
 RewriteRule ^favicon\.ico$ assets/favicon/favicon.ico [L]
 
 RewriteEngine On
@@ -27,35 +27,35 @@ RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 # 2. SECURITY: Prevent Directory Browsing
 Options -Indexes
 
-# 3. SECURITY: Protect System & Data Files
-<FilesMatch "^\.|\.(env|log|md|iml)$">
+# 3. SECURITY: Protect System, Source & Environment Files
+<FilesMatch "^(\.|\.env|\.log|\.md|\.iml|\.git|\.yml|\.sh)">
     Order allow,deny
     Deny from all
 </FilesMatch>
 
-# 4. SECIRUTY: Prevent clickjacking
-<IfModule mod_headers.c>
-    Header set X-Content-Type-Options "nosniff"
-    Header set X-Frame-Options "SAMEORIGIN"
-    Header set Referrer-Policy "strict-origin-when-cross-origin"
-</IfModule>
+# 4. SECURITY: Strict Database & Transaction Protection
+# Block direct downloads of SQLite files, WAL journals, and user archives
+<FilesMatch "\.(sqlite|sqlite3|db|db3|wal|shm)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
 
+RewriteRule ^data/rasta\.sqlite$ - [F,L,NC]
 RewriteRule ^data/users\.json$ - [F,L,NC]
-RewriteRule ^data/matrices/.*\.json$ - [F,L,NC]
+RewriteRule ^data/presence\.json$ - [F,L,NC]
 
 # 5. ROUTING: REST API Bridge
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^api/(.*)$ api.php?endpoint=$1 [QSA,L]
 
-# 6. MIME Types & Caching
+# 6. MIME Types & Cache Rules
 AddType image/svg+xml .svg
 AddType font/woff2 .woff2
 
 <IfModule mod_expires.c>
     ExpiresActive On
-    # Do NOT set ExpiresDefault to 1 month (it caches dynamic APIs and HTML)
-    ExpiresDefault "access plus 0 seconds"
-
-    # Static Assets Only
+    # Authoritative static assets
     ExpiresByType text/css "access plus 1 month"
     ExpiresByType application/javascript "access plus 1 month"
     ExpiresByType font/woff2 "access plus 1 year"
@@ -63,6 +63,6 @@ AddType font/woff2 .woff2
     ExpiresByType image/png "access plus 1 month"
     ExpiresByType image/x-icon "access plus 1 month"
 
-    # Explicitly prevent caching for JSON API
+    # Dynamic JSON responses and active endpoints must never cache
     ExpiresByType application/json "access plus 0 seconds"
 </IfModule>

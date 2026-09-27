@@ -6,7 +6,7 @@
     <meta name="description" content="سامانه الگوریتمی و هوشمند اولویت‌بندی رشته‌های دانشگاهی کنکور سراسری بدون ترکیب‌های ناموجود.">
     <meta property="og:title" content="رستا | سامانه هوشمند انتخاب رشته کنکور">
     <meta property="og:description" content="انتخاب رشته کنکور سراسری، دقیق‌تر و بدون خطای انسانی با ماتریس اعتبارسنجی رشته-دانشگاه.">
-    <meta property="og:url" content="https://rasta.smabedi.ir">
+    <meta property="og:url" content="https://rasta-app.ir">
     <meta property="og:type" content="website">
     <meta name="theme-color" content="#2563eb">
     <title>رستا | سامانه هوشمند انتخاب رشته</title>
@@ -47,24 +47,23 @@
         </p>
 
         <div class="hero-actions">
-            <a href="/management/major-matrix/" class="btn-hero-primary">
-                <span>ورود به سامانه رستا</span>
-                <!-- Razor-sharp inline vector arrow -->
-                <svg class="btn-arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="19" y1="12" x2="5" y2="12"></line>
-                    <polyline points="12 19 5 12 12 5"></polyline>
+            <button type="button" class="btn-hero-primary" id="btnHeroAuth">
+                <span class="btn-hero-text">ورود به سامانه رستا</span>
+                <!-- Apple SF Chevron (Direct & Unboxed) -->
+                <svg class="btn-arrow-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M10 3.2L5.2 8L10 12.8" />
                 </svg>
-            </a>
+            </button>
             <div class="hero-status-pill">
                 <span class="status-indicator-dot"></span>
-                آماده اعتبارسنجی رشته‌های ریاضی، تجربی و انسانی
+                <span>آماده اولویت‌بندی رشته‌های ریاضی و انسانی</span>
             </div>
         </div>
 
         <!-- Key Metric Counters -->
         <div class="stats-strip">
             <div class="stat-item">
-                <span class="stat-number">۳</span>
+                <span class="stat-number">۲</span>
                 <span class="stat-label">گروه آزمایشی جامع</span>
             </div>
             <div class="stat-divider"></div>
@@ -84,6 +83,7 @@
     <!--#include virtual="/includes/footer.html" -->
 </div>
 
+<script src="/js/auth.js" defer></script>
 <script src="/js/core.js"></script>
 
 <!-- Layout-Stable Dynamic Word Engine with Locked Anchor (Zero Re-Centering Shift) -->
@@ -148,5 +148,249 @@
         }, 2000);
     });
 </script>
+
+<div class="auth-modal-backdrop" id="authModalBackdrop" style="display: none;">
+    <div class="auth-modal-card" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+        <!-- Modal Header -->
+        <div class="auth-card-header">
+            <div>
+                <h3 class="auth-title" id="authTitle">ورود به سامانه هوشمند رستا</h3>
+                <p class="auth-subtitle" id="authSubtitle">برای ذخیره و مدیریت سناریوهای خود وارد شوید</p>
+            </div>
+            <button class="auth-close-btn" id="btnCloseAuthModal" type="button" aria-label="بستن">&times;</button>
+        </div>
+
+        <!-- Mode Selector: Login vs. Student Register vs. Institute Register -->
+        <div class="auth-nav-tabs">
+            <button class="auth-nav-btn active" data-tab="login" type="button">ورود</button>
+            <button class="auth-nav-btn" data-tab="register-student" type="button">ثبت‌نام داوطلب</button>
+            <button class="auth-nav-btn" data-tab="register-institute" type="button">ثبت آموزشگاه / مشاور</button>
+        </div>
+
+        <div class="auth-alert-box" id="authAlert" style="display: none;"></div>
+
+        <!-- TAB 1: LOGIN FORM -->
+        <form class="auth-pane active" id="formAuthLogin">
+            <div class="segmented-choice">
+                <label class="choice-pill">
+                    <input type="radio" name="login_method" value="password" checked>
+                    <span>رمز عبور</span>
+                </label>
+                <label class="choice-pill">
+                    <input type="radio" name="login_method" value="otp">
+                    <span>کد یک‌بارمصرف پیامکی</span>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="loginPhone">شماره همراه</label>
+                <input type="tel" id="loginPhone" class="form-control" placeholder="09123456789" dir="ltr" required>
+            </div>
+
+            <!-- Password Field Container -->
+            <div class="form-group" id="loginPasswordGroup">
+                <label class="form-label" for="loginPassword">کلمه عبور</label>
+                <input type="password" id="loginPassword" class="form-control" placeholder="حداقل ۶ نویسه" dir="ltr">
+            </div>
+
+            <div style="text-align: right; margin-top: -0.35rem; margin-bottom: 0.85rem;">
+                <button type="button" class="auth-link-text" id="btnOpenForgotPwd">فراموشی رمز عبور</button>
+            </div>
+
+            <!-- OTP Field Container (Hidden initially) -->
+            <div class="form-group" id="loginOtpGroup" style="display: none;">
+                <label class="form-label" for="loginOtpCode">کد ۵ رقمی تایید</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="loginOtpCode" class="form-control" placeholder="۱۲۳۴۵" maxlength="5" dir="ltr" style="flex: 1; text-align: center;">
+                    <button type="button" class="btn btn-secondary btn-otp-action" id="btnRequestOtp">
+                        دریافت کد تایید
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" id="btnLoginSubmit">ورود به حساب</button>
+        </form>
+
+        <!-- TAB 2: CANDIDATE SIGN-UP FORM -->
+        <form class="auth-pane" id="formAuthRegisterStudent">
+            <!-- Full Name (Full width for long Persian names) -->
+            <div class="form-group">
+                <label class="form-label" for="candFullName">نام و نام خانوادگی داوطلب</label>
+                <input type="text" id="candFullName" class="form-control" placeholder="مثال: علی اکبری" required>
+            </div>
+
+            <!-- Phone + OTP Trigger Row -->
+            <div class="form-group">
+                <label class="form-label" for="candPhone">شماره تلفن همراه</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="tel" id="candPhone" class="form-control" placeholder="۰۹۱۲۳۴۵۶۷۸۹" required maxlength="11" dir="ltr" style="flex: 1;">
+                    <button type="button" class="btn btn-secondary btn-otp-action" id="btnRequestRegOtp">
+                        دریافت کد تایید
+                    </button>
+                </div>
+            </div>
+
+            <!-- Paired Row 1: OTP Code (revealed) + Account Password -->
+            <div class="form-row">
+                <div class="form-group col-6" id="candOtpGroup" style="display: none;">
+                    <label class="form-label" for="candOtpCode">کد ۵ رقمی تایید</label>
+                    <input type="text" id="candOtpCode" class="form-control" placeholder="کد تایید" maxlength="5" dir="ltr">
+                </div>
+                <div class="form-group col-6" style="flex: 1;">
+                    <label class="form-label" for="candPassword">کلمه عبور حساب</label>
+                    <input type="password" id="candPassword" class="form-control" placeholder="حداقل ۶ نویسه" dir="ltr" required>
+                </div>
+            </div>
+
+            <!-- Paired Row 2: Gender (2 items) + Academic Year (Select) -->
+            <div class="form-row">
+                <div class="form-group col-6">
+                    <label class="form-label">جنسیت داوطلب</label>
+                    <div class="segmented-choice">
+                        <label class="choice-pill">
+                            <input type="radio" name="cand_gender" value="male" checked>
+                            <span>مرد</span>
+                        </label>
+                        <label class="choice-pill">
+                            <input type="radio" name="cand_gender" value="female">
+                            <span>زن</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group col-6">
+                    <label class="form-label" for="candAcademicYear">سال تحصیلی کنکور</label>
+                    <select id="candAcademicYear" class="form-control">
+                        <option value="04-05" selected>۱۴۰۴ – ۱۴۰۵ (کنکور جاری)</option>
+                        <option value="05-06">۱۴۰۵ – ۱۴۰۶</option>
+                        <option value="03-04">۱۴۰۳ – ۱۴۰۴ (پشت کنکور)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Stream Classification (3 items) -->
+            <div class="form-group">
+                <label class="form-label">گروه آزمایشی کنکور</label>
+                <div class="segmented-choice">
+                    <label class="choice-pill">
+                        <input type="radio" name="cand_stream" value="math" checked>
+                        <span>علوم ریاضی</span>
+                    </label>
+                    <label class="choice-pill">
+                        <input type="radio" name="cand_stream" value="experimental">
+                        <span>علوم تجربی</span>
+                    </label>
+                    <label class="choice-pill">
+                        <input type="radio" name="cand_stream" value="humanities">
+                        <span>علوم انسانی</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Affiliation Selector -->
+            <div class="form-group">
+                <label class="form-label">نوع ثبت‌نام داوطلب</label>
+                <div class="segmented-choice">
+                    <label class="choice-pill">
+                        <input type="radio" name="cand_affiliation" value="independent" checked>
+                        <span>داوطلب آزاد</span>
+                    </label>
+                    <label class="choice-pill">
+                        <input type="radio" name="cand_affiliation" value="affiliated">
+                        <span>آموزشگاهی (دارای کد)</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- School Invite Code Input (Dynamic) -->
+            <div class="form-group" id="inviteCodeContainer" style="display: none;">
+                <label class="form-label" for="candInviteCode">کد پیوند آموزشگاه</label>
+                <input type="text" id="candInviteCode" class="form-control uppercase" placeholder="مثال: RASTA-7F2A" maxlength="10" dir="ltr">
+                <div class="badge-verification" id="inviteVerifyBadge"></div>
+            </div>
+
+            <!-- Submit Action -->
+            <div class="auth-submit-wrapper">
+                <button type="submit" class="btn btn-primary btn-block" style="height: 44px;">
+                    تکمیل ثبت‌نام و ورود به سامانه
+                </button>
+            </div>
+        </form>
+
+        <!-- TAB 3: COUNSELOR & INSTITUTE SIGN-UP FORM -->
+        <form class="auth-pane" id="formAuthRegisterInstitute">
+            <div class="form-group">
+                <label class="form-label" for="instCounselorName">نام مشاور ارشد / مدیر مرکز</label>
+                <input type="text" id="instCounselorName" class="form-control" placeholder="مثال: علیرضا رضایی" required>
+            </div>
+
+            <!-- Phone + OTP Trigger Row -->
+            <div class="form-group">
+                <label class="form-label" for="instCounselorPhone">شماره تلفن همراه مشاور</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="tel" id="instCounselorPhone" class="form-control" placeholder="۰۹۱۲۳۴۵۶۷۸۹" required maxlength="11" dir="ltr" style="flex: 1;">
+                    <button type="button" class="btn btn-secondary btn-otp-action" id="btnRequestInstRegOtp">
+                        دریافت کد تایید
+                    </button>
+                </div>
+            </div>
+
+            <!-- Paired Row: OTP Code (revealed) + Account Password -->
+            <div class="form-row">
+                <div class="form-group col-6" id="instOtpGroup" style="display: none;">
+                    <label class="form-label" for="instOtpCode">کد ۵ رقمی تایید</label>
+                    <input type="text" id="instOtpCode" class="form-control" placeholder="کد تایید" maxlength="5" dir="ltr">
+                </div>
+                <div class="form-group col-6" style="flex: 1;">
+                    <label class="form-label" for="instPassword">کلمه عبور حساب</label>
+                    <input type="password" id="instPassword" class="form-control" placeholder="حداقل ۶ نویسه" dir="ltr" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="instName">نام رسمی مرکز مشاوره یا آموزشگاه</label>
+                <input type="text" id="instName" class="form-control" placeholder="مثال: مرکز مشاوره یا دبیرستان رستگاران" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="instOfficialPhone">تلفن تماس ثابت آموزشگاه (همراه با پیش‌شماره استان)</label>
+                <input type="tel" id="instOfficialPhone" class="form-control" placeholder="0xxxxxxxxxx" dir="ltr" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">ایجاد مرکز آموزشی و ورود</button>
+        </form>
+
+        <!-- TAB 4: PASSWORD RESET PANE -->
+        <form class="auth-pane" id="formAuthResetPassword">
+            <div class="form-group">
+                <label class="form-label" for="resetPhone">شماره همراه حساب</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="tel" id="resetPhone" class="form-control" placeholder="09123456789" required maxlength="11" dir="ltr" style="flex: 1;">
+                    <button type="button" class="btn btn-secondary btn-otp-action" id="btnRequestResetOtp">
+                        دریافت کد تایید
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-6" id="resetOtpGroup" style="display: none;">
+                    <label class="form-label" for="resetOtpCode">کد ۵ رقمی</label>
+                    <input type="text" id="resetOtpCode" class="form-control" placeholder="۱۲۳۴۵" maxlength="5" dir="ltr">
+                </div>
+                <div class="form-group col-6" style="flex: 1;">
+                    <label class="form-label" for="resetNewPassword">کلمه عبور جدید</label>
+                    <input type="password" id="resetNewPassword" class="form-control" placeholder="حداقل ۶ نویسه" dir="ltr" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" style="height: 44px; margin-top: 0.5rem;">
+                تغییر رمز عبور و ورود
+            </button>
+            <button type="button" class="btn btn-outline btn-block" id="btnCancelResetPwd" style="height: 40px; margin-top: 0.5rem;">
+                بازگشت به فرم ورود
+            </button>
+        </form>
+    </div>
+</div>
+
 </body>
 </html>
