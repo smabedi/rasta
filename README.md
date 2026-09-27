@@ -61,31 +61,51 @@ $$U(u, m) = (R_m)^\alpha \cdot (R_u)^\beta \cdot (C_{\text{city}(u)})^\gamma$$
 
 ## ✨ System Features
 
-* **Interactive Validation Matrix (`/management/major-matrix/`):**
-  * Fluid mouse drag-to-toggle interaction to mark invalid combinations across large matrices.
-  * Distinct architectural diagonal hatch indicators for fast visual auditing of non-existent combinations.
-  * Multi-stream support: Mathematics & Engineering, Experimental Sciences, and Humanities.
-  * Dual-layer drafting: Real-time browser auto-caching (`localStorage`) coupled with server-side JSON persistence.
-  * Versioned JSON snapshot exports directly from the client.
-* **Role-Based Collaborator Management (`/management/admin/`):**
-  * Zero-hardcoded credentials with an automated first-run master administrator setup screen.
-  * Collaborator provisioning with Persian name sanitization and numeric PIN normalization.
-  * Non-blocking custom modal dialogs for collaborator revocation.
-* **Performance & Accessibility:**
-  * Zero external JavaScript framework dependencies; built purely with native ES6+.
-  * Modular Layout & Partials architecture using native Apache Server-Side Includes (SSI).
-  * Staggered deblur lens entrance animations with full `@media (prefers-reduced-motion: reduce)` compliance.
-  * Non-blocking glassmorphic toast notification engine.
-  * Local variable Vazirmatn Round-Dots typography with dynamic layout width locking.
+* **Multi-Role Collaborative Ecosystem:**
+  * Multi-tenant architecture supporting Super Administrators, Educational Centers (Institutes), Institute-Affiliated Candidates, and Independent Applicants (`داوطلب آزاد`)[cite: 2, 3].
+  * Unique institutional invite codes (`invite_code`) allowing schools and counseling centers to manage student cohorts without shared credentials[cite: 2, 8].
+* **20-Slot Scenario Engine (سامانه چینش‌های ۲۰گانه):**
+  * Up to 20 customizable, isolated ranking scenarios per student with custom naming, instant cloning, and baseline preservation[cite: 2, 3].
+  * Collaborative live synchronization between counselors and applicants powered by 1.5-second delta-polling[cite: 2, 3].
+  * Optimistic concurrency control using incremental version tags and lease timestamps (`locked_until`) to eliminate write collisions during shared counseling sessions[cite: 2, 3].
+* **Algorithmic Utility Ranking & Weights Lab:**
+  * Multi-criteria preference modeling evaluating field of study ratings ($R_m$), university prestige ($R_u$), and city desirability factors ($C_{\text{city}}$) under constrained priority weights ($\alpha + \beta + \gamma = 1$)[cite: 1, 2].
+  * Dynamic penalty discounting for admission semester selection ($\lambda_{\text{term}}$ for Bahman entry) and regional service commitment bonds ($\lambda_{\text{commit}}$)[cite: 2].
+  * Dedicated interactive Weights Lab (`/dev/weights-lab/`) for real-time mathematical simulation, weight distribution testing, and discount coefficient calibration[cite: 2, 5].
+* **Modern Authentication & Unified Access Control:**
+  * Dual-channel authentication supporting bcrypt-hashed passwords and pattern-based SMS OTP verifications[cite: 2, 3].
+  * Secure stateless bearer token sessions (`auth_tokens`) with 30-day life cycles[cite: 2, 3].
+  * Viewport-constrained modal interface with internal kinetic scrolling, two-column form compaction, and automatic Persian/Arabic digit normalization[cite: 4, 5].
+  * Role-aware dynamic navigation header with session-aware dropdown menus and automated workspace routing[cite: 7, 8].
+* **Administration & Governance Dashboard (`/management/admin/`):**
+  * Responsive Super Administrator workspace featuring aggregate platform metrics and active connection telemetry[cite: 2, 3].
+  * Complete management workflows for user role modifications, password resets, and institute provisioning with one-click invite code copying[cite: 2, 3, 5].
+  * Standardized Persian digit rendering, search filtering, and integrated developer tooling links[cite: 2, 5].
+* **Frontend Ergonomics & Accessibility:**
+  * Zero external JavaScript framework dependencies; engineered entirely in native ES6+[cite: 1, 2].
+  * Native RTL typography using local variable Vazirmatn Round-Dots (`Vazirmatn-RD`)[cite: 2].
+  * Custom SVG chevrons, tactile elevation physics, and full `@media (prefers-reduced-motion: reduce)` compliance[cite: 1, 6, 7].
 
 ---
 
 ## 🏗️ Technical Architecture
 
-* **Client Layer (`/css`, `/js`, `/management`, `/includes`):** Modular separation between authentication bridges (`core.js`), view controllers (`script.js`, `script.js`), shared SSI partials (`header.html`, `footer.html`), and global design tokens (`global.css`).
-* **Data Store (`/data`):** Normalized catalogs for universities (`universities.json`) and stream majors (`majors_*.json`), backed by versioned user matrix files under `/data/matrices/`.
-* **Backend REST API (`api.php`):** Lightweight, zero-dependency PHP service providing authenticated REST endpoints for matrix persistence, collaborator management, and PIN-based auth.
-* **Web Server & Routing (`.htaccess`, `router.php`):** Production Apache configuration with HTTPS enforcement, MIME caching, SSI activation, and data directory blocking (`[F]`), alongside a built-in development router for local execution.
+* **Presentation & Client Layer (`/`, `/management`, `/dev`, `/includes`):**
+  * Modular ES6+ service modules (`auth.js`, `core.js`) managing authentication handshakes, session state, and reactive UI interactions[cite: 2, 5].
+  * Native Apache Server-Side Includes (SSI) architecture (`header.html`, `footer.html`, `favicons.html`) ensuring modular page shell composition without client-side rendering lag[cite: 1, 3, 8].
+  * Centralized design system (`css/global.css`, `landing.css`) with uniform CSS design tokens, modern form controls, and RTL-balanced optical alignments[cite: 1, 4, 6].
+* **Persistence & Hybrid Data Model (`/data`):**
+  * **Relational ACID Store (`data/rasta.sqlite`):** High-concurrency SQLite database operating in Write-Ahead Logging (`PRAGMA journal_mode = WAL`) with busy timeouts, managing `users`, `institutes`, `scenario_slots`, `sms_otps`, `auth_tokens`, and `presence`[cite: 2, 3, 5].
+  * **Authoritative Catalogs (`data/*.json`):** Static datasets (`universities.json`, `majors_math.json`, `majors_experimental.json`, `majors_humanities.json`) extracted deterministically from official Sanjesh vector PDFs[cite: 2, 3].
+* **Backend REST API (`api.php`):**
+  * Zero-dependency PHP backend service (PHP 8.0+) structured with clean separation of schema, auth guards, and REST endpoint dispatchers[cite: 1, 2].
+  * Strict Anti-IDOR scoping guards (`resolveTargetStudentId`), role enforcement middleware (`Auth::requireRole`), and atomic transaction execution[cite: 2, 3].
+  * Concurrency endpoints providing lightweight 1.5-second delta-polling responses, optimistic lock acquisition, and in-database presence tracking[cite: 2, 3, 5].
+* **Server Infrastructure & Routing (`.htaccess`, `router.php`):**
+  * Hardened Apache/LiteSpeed configuration enforcing HTTPS, disabling directory browsing, and explicitly denying HTTP downloads of `.sqlite`, `.db`, `.wal`, and `.shm` files[cite: 2, 3].
+  * Internal URL rewrite rules proxying `/api/*` requests directly to `api.php` while preserving query parameters[cite: 2, 3].
+  * Static MIME caching for web fonts and SVG assets paired with zero-cache expiration headers on dynamic JSON responses[cite: 2].
+  * Built-in local development router (`router.php`) for execution via the standard PHP built-in web server[cite: 1].
 
 ---
 
@@ -98,7 +118,7 @@ $$U(u, m) = (R_m)^\alpha \cdot (R_u)^\beta \cdot (C_{\text{city}(u)})^\gamma$$
 ### Running Locally
 ```bash
 # 1. Clone repository
-git clone [https://github.com/smabedi/rasta.git](https://github.com/smabedi/rasta.git)
+git clone https://github.com/smabedi/rasta.git
 cd rasta
 
 # 2. Start the built-in development server
@@ -107,7 +127,7 @@ php -S 127.0.0.1:8000 router.php
 
 The application will be running locally at:
 ```text
-[http://127.0.0.1:8000](http://127.0.0.1:8000)
+http://127.0.0.1:8000
 ```
 
 ---
