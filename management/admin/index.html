@@ -59,7 +59,10 @@
   <section id="tabUsers" class="tab-content active">
     <div class="table-controls">
       <div class="control-group">
+        <label for="userSearchInput" class="sr-only">جستجوی کاربران</label>
         <input type="text" id="userSearchInput" class="input-text" placeholder="جستجو بر اساس نام یا شماره تلفن...">
+
+        <label for="roleFilterSelect" class="sr-only">فیلتر نقش کاربران</label>
         <select id="roleFilterSelect" class="input-select">
           <option value="">همه نقش‌ها</option>
           <option value="student_independent">داوطلب آزاد</option>
@@ -98,6 +101,7 @@
   <section id="tabInstitutes" class="tab-content">
     <div class="table-controls">
       <div class="control-group">
+        <label for="instituteSearchInput" class="sr-only">جستجوی مراکز آموزشی</label>
         <input type="text" id="instituteSearchInput" class="input-text" placeholder="جستجوی نام مرکز یا کد پیوند...">
       </div>
       <button id="openNewInstituteModalBtn" class="btn btn-primary">+ ثبت مرکز همکار جدید</button>
@@ -154,15 +158,15 @@
 
     <form id="authForm" class="modal-form">
       <div class="form-field" id="bootstrapNameField" style="display: none;">
-        <label>نام و نام خانوادگی مدیر</label>
+        <label for="authFullName">نام و نام خانوادگی مدیر</label>
         <input type="text" id="authFullName" class="input-text" placeholder="مثال: علیرضا محمدی">
       </div>
       <div class="form-field">
-        <label>شماره تلفن همراه</label>
+        <label for="authPhone">شماره تلفن همراه</label>
         <input type="tel" id="authPhone" class="input-text" placeholder="09123456789" required>
       </div>
       <div class="form-field">
-        <label>رمز عبور</label>
+        <label for="authPassword">رمز عبور</label>
         <input type="password" id="authPassword" class="input-text" placeholder="حداقل ۶ نویسه" required>
       </div>
       <div id="authErrorMsg" class="form-error"></div>
@@ -198,7 +202,7 @@
           <input type="tel" id="formUserPhone" class="input-text" placeholder="09123456789" required dir="ltr">
         </div>
         <div class="form-field">
-          <label for="formUserPassword">رمز عبور <small id="pwdHint" style="color: var(--text-muted);">(حداقل ۶ نویسه)</small></label>
+          <label for="formUserPassword">رمز عبور <small id="pwdHint" style="color: var(--text-muted);">(داوطلب: ۶ نویسه / مشاور و مدیر: ۸ نویسه)</small></label>
           <input type="password" id="formUserPassword" class="input-text" dir="ltr">
         </div>
       </div>
@@ -265,15 +269,15 @@
     <form id="instituteForm" class="modal-form">
       <input type="hidden" id="instEditId">
       <div class="form-field">
-        <label>نام آموزشگاه / مدرسه</label>
+        <label for="formInstName">نام آموزشگاه / مدرسه</label>
         <input type="text" id="formInstName" class="input-text" placeholder="مثال: دبیرستان علامه حلی" required>
       </div>
       <div class="form-field">
-        <label>کد پیوند اختصاصی (اختیاری؛ خالی بگذارید تا خودکار ایجاد شود)</label>
-        <input type="text" id="formInstCode" class="input-text" placeholder="مثال: RASTA-TEH01">
+        <label for="formInstCode">کد پیوند اختصاصی (اختیاری؛ خالی بگذارید تا خودکار ایجاد شود)</label>
+        <input type="text" id="formInstCode" class="input-text uppercase" placeholder="مثال: RASTA-TEH1-4B2C-9D0E" maxlength="30" dir="ltr">
       </div>
       <div class="form-field">
-        <label>شماره تماس مسئول / پشتیبانی (همراه با پیش‌شماره)</label>
+        <label for="formInstPhone">شماره تماس مسئول / پشتیبانی (همراه با پیش‌شماره)</label>
         <input type="tel" id="formInstPhone" class="input-text" placeholder="0xxxxxxxxxx">
       </div>
       <div id="instFormError" class="form-error"></div>

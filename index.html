@@ -155,7 +155,7 @@
         <div class="auth-card-header">
             <div>
                 <h3 class="auth-title" id="authTitle">ورود به سامانه هوشمند رستا</h3>
-                <p class="auth-subtitle" id="authSubtitle">برای ذخیره و مدیریت سناریوهای خود وارد شوید</p>
+                <p class="auth-subtitle" id="authSubtitle">برای ذخیره و مدیریت چینش‌های خود وارد شوید</p>
             </div>
             <button class="auth-close-btn" id="btnCloseAuthModal" type="button" aria-label="بستن">&times;</button>
         </div>
@@ -287,24 +287,29 @@
             </div>
 
             <!-- Affiliation Selector -->
-            <div class="form-group">
-                <label class="form-label">نوع ثبت‌نام داوطلب</label>
-                <div class="segmented-choice">
-                    <label class="choice-pill">
-                        <input type="radio" name="cand_affiliation" value="independent" checked>
-                        <span>داوطلب آزاد</span>
-                    </label>
-                    <label class="choice-pill">
-                        <input type="radio" name="cand_affiliation" value="affiliated">
-                        <span>آموزشگاهی (دارای کد)</span>
-                    </label>
-                </div>
+            <div class="segmented-choice" role="radiogroup" aria-label="انتخاب نقش کاربر">
+                <label class="choice-pill" for="role-student-ind">
+                    <input type="radio" id="role-student-ind" name="role" value="student_independent" checked>
+                    <span>داوطلب آزاد</span>
+                </label>
+                <label class="choice-pill" for="role-student-aff">
+                    <input type="radio" id="role-student-aff" name="role" value="student_affiliated">
+                    <span>داوطلب آموزشگاه</span>
+                </label>
+                <label class="choice-pill" for="role-institute">
+                    <input type="radio" id="role-institute" name="role" value="institute">
+                    <span>مشاور / آموزشگاه</span>
+                </label>
+                <label class="choice-pill" for="role-admin">
+                    <input type="radio" id="role-admin" name="role" value="admin">
+                    <span>مدیر کل</span>
+                </label>
             </div>
 
             <!-- School Invite Code Input (Dynamic) -->
             <div class="form-group" id="inviteCodeContainer" style="display: none;">
                 <label class="form-label" for="candInviteCode">کد پیوند آموزشگاه</label>
-                <input type="text" id="candInviteCode" class="form-control uppercase" placeholder="مثال: RASTA-7F2A" maxlength="10" dir="ltr">
+                <input type="text" id="candInviteCode" class="form-control uppercase" placeholder="مثال: RASTA-7F2A-9C4B-1E8D" maxlength="25" dir="ltr">
                 <div class="badge-verification" id="inviteVerifyBadge"></div>
             </div>
 
@@ -342,7 +347,7 @@
                 </div>
                 <div class="form-group col-6" style="flex: 1;">
                     <label class="form-label" for="instPassword">کلمه عبور حساب</label>
-                    <input type="password" id="instPassword" class="form-control" placeholder="حداقل ۶ نویسه" dir="ltr" required>
+                    <input type="password" id="instPassword" class="form-control" placeholder="حداقل ۸ نویسه" minlength="8" dir="ltr" required>
                 </div>
             </div>
 
@@ -351,9 +356,15 @@
                 <input type="text" id="instName" class="form-control" placeholder="مثال: مرکز مشاوره یا دبیرستان رستگاران" required>
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="instOfficialPhone">تلفن تماس ثابت آموزشگاه (همراه با پیش‌شماره استان)</label>
-                <input type="tel" id="instOfficialPhone" class="form-control" placeholder="0xxxxxxxxxx" dir="ltr" required>
+            <div class="form-row">
+                <div class="form-group col-6">
+                    <label class="form-label" for="instCity">شهر آموزشگاه</label>
+                    <input type="text" id="instCity" class="form-control" placeholder="مثال: تهران" required>
+                </div>
+                <div class="form-group col-6">
+                    <label class="form-label" for="instOfficialPhone">تلفن ثابت (همراه پیش‌شماره)</label>
+                    <input type="tel" id="instOfficialPhone" class="form-control" placeholder="مثال: 02188776655" dir="ltr" required>
+                </div>
             </div>
 
             <button type="submit" class="btn btn-primary btn-block">ایجاد مرکز آموزشی و ورود</button>
