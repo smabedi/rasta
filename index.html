@@ -287,23 +287,18 @@
             </div>
 
             <!-- Affiliation Selector -->
-            <div class="segmented-choice" role="radiogroup" aria-label="انتخاب نقش کاربر">
-                <label class="choice-pill" for="role-student-ind">
-                    <input type="radio" id="role-student-ind" name="role" value="student_independent" checked>
-                    <span>داوطلب آزاد</span>
-                </label>
-                <label class="choice-pill" for="role-student-aff">
-                    <input type="radio" id="role-student-aff" name="role" value="student_affiliated">
-                    <span>داوطلب آموزشگاه</span>
-                </label>
-                <label class="choice-pill" for="role-institute">
-                    <input type="radio" id="role-institute" name="role" value="institute">
-                    <span>مشاور / آموزشگاه</span>
-                </label>
-                <label class="choice-pill" for="role-admin">
-                    <input type="radio" id="role-admin" name="role" value="admin">
-                    <span>مدیر کل</span>
-                </label>
+            <div class="form-group">
+                <span class="form-label" id="candAffiliationLabel">نوع ثبت‌نام داوطلب</span>
+                <div class="segmented-choice" role="radiogroup" aria-labelledby="candAffiliationLabel">
+                    <label class="choice-pill" for="candAffInd">
+                        <input type="radio" id="candAffInd" name="cand_affiliation" value="independent" checked>
+                        <span>داوطلب آزاد</span>
+                    </label>
+                    <label class="choice-pill" for="candAffInst">
+                        <input type="radio" id="candAffInst" name="cand_affiliation" value="affiliated">
+                        <span>آموزشگاهی (دارای کد)</span>
+                    </label>
+                </div>
             </div>
 
             <!-- School Invite Code Input (Dynamic) -->
