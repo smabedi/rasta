@@ -37,9 +37,6 @@
                     <polyline points="12 19 5 12 12 5"></polyline>
                 </svg>
             </a>
-            <a href="/management/major-matrix/" class="btn-error-outline">
-                ورود به محیط ماتریس
-            </a>
         </div>
     </main>
 

@@ -78,6 +78,8 @@ class Database {
 
 // --- SCHEMA BOOTSTRAP ---
 
+// --- SCHEMA BOOTSTRAP ---
+
 class Schema {
     public static function initialize(): void {
         $pdo = Database::getConnection();
@@ -87,6 +89,8 @@ class Schema {
             name TEXT NOT NULL,
             invite_code TEXT UNIQUE NOT NULL,
             contact_phone TEXT DEFAULT NULL,
+            city TEXT DEFAULT 'تهران',
+            accepts_new_students INTEGER DEFAULT 1,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
 
@@ -100,6 +104,16 @@ class Schema {
             role TEXT NOT NULL CHECK(role IN ('admin', 'institute', 'student_affiliated', 'student_independent')),
             stream TEXT DEFAULT NULL CHECK(stream IN ('math', 'experimental', 'humanities')),
             academic_year TEXT DEFAULT '04-05',
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS counselor_invites (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            institute_id INTEGER NOT NULL REFERENCES institutes(id) ON DELETE CASCADE,
+            token TEXT UNIQUE NOT NULL,
+            phone TEXT DEFAULT NULL,
+            expires_at INTEGER NOT NULL,
+            used_at INTEGER DEFAULT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         );
 
@@ -146,8 +160,21 @@ class Schema {
         CREATE INDEX IF NOT EXISTS idx_slots_version ON scenario_slots(id, version);
         CREATE INDEX IF NOT EXISTS idx_auth_tokens_lookup ON auth_tokens(token_hash, expires_at);
         CREATE INDEX IF NOT EXISTS idx_presence_last_seen ON presence(last_seen);
+        CREATE INDEX IF NOT EXISTS idx_counselor_invites_token ON counselor_invites(token, expires_at);
         SQL
         );
+
+        /*// Dynamic column migrations for existing SQLite databases
+        $cols = $pdo->query("PRAGMA table_info(institutes)")->fetchAll(PDO::FETCH_COLUMN, 1);
+        if (!in_array('city', $cols, true)) {
+            $pdo->exec("ALTER TABLE institutes ADD COLUMN city TEXT DEFAULT 'تهران';");
+        }
+        if (!in_array('accepts_new_students', $cols, true)) {
+            $pdo->exec("ALTER TABLE institutes ADD COLUMN accepts_new_students INTEGER DEFAULT 1;");
+        }
+        if (!in_array('created_at', $cols, true)) {
+            $pdo->exec("ALTER TABLE institutes ADD COLUMN created_at DATETIME DEFAULT CURRENT_TIMESTAMP;");
+        }*/
     }
 }
 
@@ -189,7 +216,9 @@ class Auth {
         $pdo = Database::getConnection();
 
         $stmt = $pdo->prepare("
-            SELECT u.id, u.institute_id, u.phone, u.full_name, u.role, u.stream, u.gender, u.academic_year, i.name as institute_name
+            SELECT u.id, u.institute_id, u.phone, u.full_name, u.role, u.stream, u.gender, u.academic_year, u.created_at,
+                   i.name as institute_name, i.invite_code as institute_invite_code, i.city as institute_city,
+                   i.accepts_new_students as institute_accepts_new_students
             FROM auth_tokens t
             JOIN users u ON u.id = t.user_id
             LEFT JOIN institutes i ON i.id = u.institute_id
@@ -250,7 +279,7 @@ class Auth {
             }
         }
 
-        Database::sendJsonError('شما دسترسی مجاز به سناریوی این داوطلب را ندارید.', 403);
+        Database::sendJsonError('شما دسترسی مجاز به چینش این داوطلب را ندارید.', 403);
         exit;
     }
 
@@ -436,11 +465,14 @@ switch ($resource) {
             $role = 'student_independent';
 
             if (!empty($inviteCode)) {
-                $instStmt = $pdo->prepare("SELECT id FROM institutes WHERE invite_code = :code LIMIT 1");
+                $instStmt = $pdo->prepare("SELECT id, accepts_new_students FROM institutes WHERE invite_code = :code LIMIT 1");
                 $instStmt->execute(['code' => $inviteCode]);
                 $inst = $instStmt->fetch();
                 if (!$inst) {
                     Database::sendJsonError('کد پیوند آموزشگاه نامعتبر است.');
+                }
+                if ((int)($inst['accepts_new_students'] ?? 1) === 0) {
+                    Database::sendJsonError('پذیرش داوطلب جدید توسط این آموزشگاه در حال حاضر غیرفعال است.', 403);
                 }
                 $instituteId = (int)$inst['id'];
                 $role = 'student_affiliated';
@@ -483,7 +515,7 @@ switch ($resource) {
                         'academic_year' => $academicYear,
                         'institute_id' => $instituteId
                     ],
-                    'redirect' => '/'
+                    'redirect' => '/dashboard/student/'
                 ], 201);
             } catch (Exception $e) {
                 $pdo->rollBack();
@@ -499,6 +531,10 @@ switch ($resource) {
             $counselorName = trim($body['full_name'] ?? '');
             $instituteName = trim($body['institute_name'] ?? '');
             $contactPhone = normalizeDigits(trim($body['contact_phone'] ?? ''));
+            $city = trim($body['city'] ?? 'تهران');
+            if (empty($city)) {
+                $city = 'تهران';
+            }
 
             if (!preg_match('/^09[0-9]{9}$/', $phone)) {
                 Database::sendJsonError('شماره تلفن همراه مشاور نامعتبر است.');
@@ -506,8 +542,8 @@ switch ($resource) {
             if (empty($code)) {
                 Database::sendJsonError('کد تأیید پیامکی الزامی است.');
             }
-            if (strlen($password) < 6) {
-                Database::sendJsonError('رمز عبور باید حداقل ۶ نویسه باشد.');
+            if (strlen($password) < 8) {
+                Database::sendJsonError('رمز عبور مشاور باید حداقل ۸ نویسه باشد.');
             }
             if (empty($counselorName)) {
                 Database::sendJsonError('نام مشاور مسئول الزامی است.');
@@ -534,17 +570,18 @@ switch ($resource) {
             // Atomic PDO SQLite Transaction
             $pdo->beginTransaction();
             try {
-                // Generate a unique 6-character hex invite code
-                $inviteCode = 'RASTA-' . strtoupper(substr(bin2hex(random_bytes(3)), 0, 4));
+                // Generate a unique 16-character code: RASTA-XXXX-XXXX-XXXX
+                $inviteCode = 'RASTA-' . strtoupper(implode('-', str_split(bin2hex(random_bytes(6)), 4)));
 
                 $instStmt = $pdo->prepare("
-                    INSERT INTO institutes (name, invite_code, contact_phone) 
-                    VALUES (:name, :code, :phone)
+                    INSERT INTO institutes (name, invite_code, contact_phone, city) 
+                    VALUES (:name, :code, :phone, :city)
                 ");
                 $instStmt->execute([
                     'name' => $instituteName,
                     'code' => $inviteCode,
-                    'phone' => $contactPhone
+                    'phone' => $contactPhone,
+                    'city' => $city
                 ]);
                 $instituteId = (int)$pdo->lastInsertId();
 
@@ -574,9 +611,10 @@ switch ($resource) {
                         'role' => 'institute',
                         'institute_id' => $instituteId,
                         'institute_name' => $instituteName,
-                        'invite_code' => $inviteCode
+                        'invite_code' => $inviteCode,
+                        'city' => $city
                     ],
-                    'redirect' => '/management/institute/'
+                    'redirect' => '/dashboard/institute/'
                 ], 201);
             } catch (Exception $e) {
                 $pdo->rollBack();
@@ -604,8 +642,9 @@ switch ($resource) {
 
             $redirectUrl = match ($user['role']) {
                 'admin' => '/management/admin/',
-                'institute' => '/management/institute/',
-                default => '/'
+                'institute' => '/dashboard/institute/',
+                'student_affiliated', 'student_independent' => '/dashboard/student/',
+                default => '/dashboard/student/'
             };
 
             $token = Auth::createToken((int)$user['id']);
@@ -712,8 +751,9 @@ switch ($resource) {
                 $token = Auth::createToken((int)$user['id']);
                 $redirectUrl = match ($user['role']) {
                     'admin' => '/management/admin/',
-                    'institute' => '/management/institute/',
-                    default => '/'
+                    'institute' => '/dashboard/institute/',
+                    'student_affiliated', 'student_independent' => '/dashboard/student/',
+                    default => '/dashboard/student/'
                 };
                 Database::sendJsonResponse([
                     'ok' => true,
@@ -748,16 +788,17 @@ switch ($resource) {
             if (empty($code)) {
                 Database::sendJsonError('کد تأیید پیامکی الزامی است.');
             }
-            if (strlen($newPassword) < 6) {
-                Database::sendJsonError('کلمه عبور جدید باید حداقل ۶ نویسه باشد.');
-            }
-
             $uStmt = $pdo->prepare("SELECT id, role FROM users WHERE phone = :phone LIMIT 1");
             $uStmt->execute(['phone' => $phone]);
             $user = $uStmt->fetch();
 
             if (!$user) {
                 Database::sendJsonError('کاربری با این شماره تلفن یافت نشد.', 404);
+            }
+
+            $minLen = str_starts_with($user['role'], 'student') ? 6 : 8;
+            if (strlen($newPassword) < $minLen) {
+                Database::sendJsonError("کلمه عبور جدید باید حداقل {$minLen} نویسه باشد.");
             }
 
             Auth::verifyOtp($pdo, $phone, $code);
@@ -772,8 +813,9 @@ switch ($resource) {
             $token = Auth::createToken((int)$user['id']);
             $redirectUrl = match ($user['role']) {
                 'admin' => '/management/admin/',
-                'institute' => '/management/institute/',
-                default => '/'
+                'institute' => '/dashboard/institute/',
+                'student_affiliated', 'student_independent' => '/dashboard/student/',
+                default => '/dashboard/student/'
             };
 
             Database::sendJsonResponse([
@@ -783,29 +825,324 @@ switch ($resource) {
                 'message' => 'کلمه عبور با موفقیت تغییر یافت.'
             ]);
         }
+
+    // --- USER PROFILE & ACCOUNT MANAGEMENT ---
+
+    case 'user':
+        $user = Auth::requireAuth();
+        $pdo = Database::getConnection();
+
+        // 1. PUT /api/user/profile -> Update personal & academic info
+        if ($action === 'profile' && in_array($method, ['PUT', 'POST'], true)) {
+            $fullName = trim($body['full_name'] ?? '');
+            if (empty($fullName)) {
+                Database::sendJsonError('نام و نام خانوادگی الزامی است.', 422);
+            }
+
+            if (in_array($user['role'], ['institute', 'admin'], true)) {
+                $stmt = $pdo->prepare("UPDATE users SET full_name = :full_name WHERE id = :id");
+                $stmt->execute(['full_name' => $fullName, 'id' => $user['id']]);
+                Database::sendJsonResponse(['ok' => true, 'message' => 'مشخصات شما با موفقیت بروزرسانی شد.']);
+            }
+
+            $stream = $body['stream'] ?? null;
+            $gender = $body['gender'] ?? null;
+            $academicYear = trim($body['academic_year'] ?? '1405');
+
+            if (!in_array($stream, ['math', 'experimental', 'humanities'], true)) {
+                Database::sendJsonError('گروه آزمایشی معتبر نمی‌باشد.', 422);
+            }
+            if (!in_array($gender, ['male', 'female'], true)) {
+                Database::sendJsonError('انتخاب جنسیت الزامی است.', 422);
+            }
+
+            $stmt = $pdo->prepare("
+                UPDATE users 
+                SET full_name = :full_name, stream = :stream, gender = :gender, academic_year = :academic_year 
+                WHERE id = :id
+            ");
+            $stmt->execute([
+                'full_name' => $fullName,
+                'stream' => $stream,
+                'gender' => $gender,
+                'academic_year' => $academicYear,
+                'id' => $user['id']
+            ]);
+
+            Database::sendJsonResponse(['ok' => true, 'message' => 'مشخصات فردی با موفقیت بروزرسانی شد.']);
+        }
+
+        // 2. Phone Number Change Flow
+        if ($action === 'phone') {
+            // POST /api/user/phone/request-otp
+            if ($subAction === 'request-otp' && $method === 'POST') {
+                $newPhone = normalizeDigits(trim($body['new_phone'] ?? ''));
+
+                if (!preg_match('/^09[0-9]{9}$/', $newPhone)) {
+                    Database::sendJsonError('شماره تلفن همراه جدید نامعتبر است.', 422);
+                }
+                if ($newPhone === $user['phone']) {
+                    Database::sendJsonError('شماره وارد شده با شماره فعلی شما یکسان است.', 422);
+                }
+
+                $chk = $pdo->prepare("SELECT id FROM users WHERE phone = :p AND id != :id");
+                $chk->execute(['p' => $newPhone, 'id' => $user['id']]);
+                if ($chk->fetch()) {
+                    Database::sendJsonError('این شماره تلفن قبلاً به نام کاربر دیگری در سامانه ثبت شده است.', 409);
+                }
+
+                $code = (string)random_int(10000, 99999);
+                $codeHash = password_hash($code, PASSWORD_BCRYPT);
+                $expiresAt = time() + 120;
+
+                $pdo->prepare("DELETE FROM sms_otps WHERE phone = :phone")->execute(['phone' => $newPhone]);
+                $stmt = $pdo->prepare("INSERT INTO sms_otps (phone, code_hash, expires_at) VALUES (:phone, :hash, :exp)");
+                $stmt->execute(['phone' => $newPhone, 'hash' => $codeHash, 'exp' => $expiresAt]);
+
+                $smsResult = SmsEngine::send($newPhone, 'otp', ['code' => $code]);
+
+                Database::sendJsonResponse([
+                    'ok' => true,
+                    'message' => 'کد تأیید به شماره جدید ارسال شد.',
+                    'dev_code' => $code,
+                    'dev_sms' => $smsResult
+                ]);
+            }
+
+            // POST /api/user/phone/verify
+            if ($subAction === 'verify' && $method === 'POST') {
+                $newPhone = normalizeDigits(trim($body['new_phone'] ?? ''));
+                $code = normalizeDigits(trim($body['code'] ?? ''));
+
+                if (!preg_match('/^09[0-9]{9}$/', $newPhone)) {
+                    Database::sendJsonError('شماره تلفن نامعتبر است.', 422);
+                }
+                if (empty($code)) {
+                    Database::sendJsonError('کد تأیید پیامکی الزامی است.', 422);
+                }
+
+                Auth::verifyOtp($pdo, $newPhone, $code);
+
+                $pdo->prepare("UPDATE users SET phone = :phone WHERE id = :id")->execute([
+                    'phone' => $newPhone,
+                    'id' => $user['id']
+                ]);
+
+                Database::sendJsonResponse([
+                    'ok' => true,
+                    'message' => 'شماره تلفن همراه شما با موفقیت تغییر یافت.',
+                    'phone' => $newPhone
+                ]);
+            }
+        }
+
+        // 3. Institute Affiliation Flow
+        if ($action === 'institute') {
+            // POST /api/user/institute/attach
+            if ($subAction === 'attach' && $method === 'POST') {
+                $inviteCode = strtoupper(trim($body['invite_code'] ?? ''));
+                if (empty($inviteCode)) {
+                    Database::sendJsonError('کد دعوت آموزشگاه الزامی است.', 422);
+                }
+
+                $instStmt = $pdo->prepare("SELECT id, name, accepts_new_students FROM institutes WHERE UPPER(invite_code) = :code LIMIT 1");
+                $instStmt->execute(['code' => $inviteCode]);
+                $inst = $instStmt->fetch();
+
+                if (!$inst) {
+                    Database::sendJsonError('کد دعوت آموزشگاه یافت نشد.', 404);
+                }
+                if ((int)($inst['accepts_new_students'] ?? 1) === 0) {
+                    Database::sendJsonError('پذیرش داوطلب جدید توسط این آموزشگاه موقتاً غیرفعال است.', 403);
+                }
+
+                $newRole = ($user['role'] === 'student_independent') ? 'student_affiliated' : $user['role'];
+                $pdo->prepare("UPDATE users SET institute_id = :inst_id, role = :role WHERE id = :id")->execute([
+                    'inst_id' => $inst['id'],
+                    'role' => $newRole,
+                    'id' => $user['id']
+                ]);
+
+                Database::sendJsonResponse([
+                    'ok' => true,
+                    'message' => 'اتصال به آموزشگاه با موفقیت برقرار شد.',
+                    'institute_name' => $inst['name']
+                ]);
+            }
+
+            // POST /api/user/institute/detach
+            if ($subAction === 'detach' && $method === 'POST') {
+                $newRole = ($user['role'] === 'student_affiliated') ? 'student_independent' : $user['role'];
+                $pdo->prepare("UPDATE users SET institute_id = NULL, role = :role WHERE id = :id")->execute([
+                    'role' => $newRole,
+                    'id' => $user['id']
+                ]);
+
+                Database::sendJsonResponse([
+                    'ok' => true,
+                    'message' => 'ارتباط با آموزشگاه با موفقیت قطع گردید.'
+                ]);
+            }
+        }
+
+        // 4. Password Management
+        if ($action === 'password') {
+            // POST /api/user/password -> Change password with current password
+            if ($subAction === '' && $method === 'POST') {
+                $currentPass = trim($body['current_password'] ?? '');
+                $newPass = trim($body['new_password'] ?? '');
+
+                $minLen = str_starts_with($user['role'], 'student') ? 6 : 8;
+                if (strlen($newPass) < $minLen) {
+                    Database::sendJsonError("کلمه عبور جدید باید حداقل {$minLen} نویسه باشد.", 422);
+                }
+
+                $stmt = $pdo->prepare("SELECT password_hash FROM users WHERE id = :id LIMIT 1");
+                $stmt->execute(['id' => $user['id']]);
+                $currentHash = $stmt->fetchColumn();
+
+                if (!$currentHash || !password_verify($currentPass, $currentHash)) {
+                    Database::sendJsonError('کلمه عبور فعلی نادرست است.', 400);
+                }
+
+                $newHash = password_hash($newPass, PASSWORD_BCRYPT);
+                $pdo->prepare("UPDATE users SET password_hash = :hash WHERE id = :id")->execute([
+                    'hash' => $newHash,
+                    'id' => $user['id']
+                ]);
+
+                Database::sendJsonResponse(['ok' => true, 'message' => 'کلمه عبور با موفقیت به‌روزرسانی شد.']);
+            }
+
+            // POST /api/user/password/reset-otp-request
+            if ($subAction === 'reset-otp-request' && $method === 'POST') {
+                $code = (string)random_int(10000, 99999);
+                $codeHash = password_hash($code, PASSWORD_BCRYPT);
+                $expiresAt = time() + 120;
+
+                $pdo->prepare("DELETE FROM sms_otps WHERE phone = :phone")->execute(['phone' => $user['phone']]);
+                $stmt = $pdo->prepare("INSERT INTO sms_otps (phone, code_hash, expires_at) VALUES (:phone, :hash, :exp)");
+                $stmt->execute(['phone' => $user['phone'], 'hash' => $codeHash, 'exp' => $expiresAt]);
+
+                $smsResult = SmsEngine::send($user['phone'], 'password_reset', ['code' => $code]);
+
+                Database::sendJsonResponse([
+                    'ok' => true,
+                    'message' => 'کد تایید بازنشانی پیامک شد.',
+                    'dev_code' => $code,
+                    'dev_sms' => $smsResult
+                ]);
+            }
+
+            // POST /api/user/password/reset-otp-verify
+            if ($subAction === 'reset-otp-verify' && $method === 'POST') {
+                $code = normalizeDigits(trim($body['code'] ?? ''));
+                $newPass = trim($body['new_password'] ?? '');
+
+                $minLen = str_starts_with($user['role'], 'student') ? 6 : 8;
+                if (strlen($newPass) < $minLen) {
+                    Database::sendJsonError("کلمه عبور جدید باید حداقل {$minLen} نویسه باشد.", 422);
+                }
+
+                Auth::verifyOtp($pdo, $user['phone'], $code);
+
+                $newHash = password_hash($newPass, PASSWORD_BCRYPT);
+                $pdo->prepare("UPDATE users SET password_hash = :hash WHERE id = :id")->execute([
+                    'hash' => $newHash,
+                    'id' => $user['id']
+                ]);
+
+                Database::sendJsonResponse(['ok' => true, 'message' => 'کلمه عبور جدید با موفقیت ثبت شد.']);
+            }
+        }
+
+        Database::sendJsonError('نقطه پایانی کاربر نامعتبر است.', 404);
         break;
 
-    // --- INSTITUTE COHORT MANAGEMENT ---
+    // --- INSTITUTE COHORT & COUNSELOR MANAGEMENT ---
 
     case 'institute':
         $user = Auth::requireRole('institute', 'admin');
         $pdo = Database::getConnection();
+        $instituteId = (int)$user['institute_id'];
+        if ($user['role'] === 'admin' && isset($_GET['institute_id'])) {
+            $instituteId = (int)$_GET['institute_id'];
+        }
 
-        // GET /api/institute/students
-        if ($action === 'students' && $method === 'GET') {
-            $instituteId = (int)$user['institute_id'];
-            if ($user['role'] === 'admin' && isset($_GET['institute_id'])) {
-                $instituteId = (int)$_GET['institute_id'];
+        if ($instituteId <= 0) {
+            Database::sendJsonError('حساب کاربری شما به هیچ آموزشگاهی متصل نیست.', 400);
+        }
+
+        // 1. GET /api/institute/details
+        if ($action === 'details' && $method === 'GET') {
+            $stmt = $pdo->prepare("SELECT id, name, invite_code, contact_phone, city, accepts_new_students, created_at FROM institutes WHERE id = :id LIMIT 1");
+            $stmt->execute(['id' => $instituteId]);
+            $inst = $stmt->fetch();
+            if (!$inst) {
+                Database::sendJsonError('آموزشگاه یافت نشد.', 404);
             }
+            Database::sendJsonResponse(['ok' => true, 'institute' => $inst]);
+        }
+
+        // 2. PUT /api/institute/details
+        if ($action === 'details' && in_array($method, ['PUT', 'POST'], true)) {
+            $name = trim($body['name'] ?? '');
+            $contactPhone = trim($body['contact_phone'] ?? '');
+            $city = trim($body['city'] ?? '');
+            $accepts = array_key_exists('accepts_new_students', $body) ? (int)$body['accepts_new_students'] : null;
+
+            $fields = [];
+            $params = ['id' => $instituteId];
+
+            if ($name !== '') {
+                $fields[] = 'name = :name';
+                $params['name'] = $name;
+            }
+            if ($contactPhone !== '') {
+                $fields[] = 'contact_phone = :phone';
+                $params['phone'] = $contactPhone;
+            }
+            if ($city !== '') {
+                $fields[] = 'city = :city';
+                $params['city'] = $city;
+            }
+            if ($accepts !== null) {
+                $fields[] = 'accepts_new_students = :accepts';
+                $params['accepts'] = $accepts ? 1 : 0;
+            }
+
+            if (!empty($fields)) {
+                $sql = "UPDATE institutes SET " . implode(', ', $fields) . " WHERE id = :id";
+                $pdo->prepare($sql)->execute($params);
+            }
+
+            Database::sendJsonResponse(['ok' => true, 'message' => 'مشخصات آموزشگاه با موفقیت بروزرسانی شد.']);
+        }
+
+        // 3. POST /api/institute/regenerate-code
+        if ($action === 'regenerate-code' && $method === 'POST') {
+            $newCode = 'RASTA-' . strtoupper(implode('-', str_split(bin2hex(random_bytes(6)), 4)));
+            $stmt = $pdo->prepare("UPDATE institutes SET invite_code = :code WHERE id = :id");
+            $stmt->execute(['code' => $newCode, 'id' => $instituteId]);
+
+            Database::sendJsonResponse([
+                'ok' => true,
+                'message' => 'کد معرف آموزشگاه با موفقیت تغییر یافت.',
+                'invite_code' => $newCode
+            ]);
+        }
+
+        // 4. GET /api/institute/students
+        if ($action === 'students' && $method === 'GET') {
             $year = $_GET['academic_year'] ?? null;
             $sql = "
                 SELECT u.id, u.full_name, u.phone, u.stream, u.gender, u.academic_year, u.created_at,
                        (SELECT COUNT(*) FROM scenario_slots WHERE user_id = u.id) as slot_count
                 FROM users u
-                WHERE u.institute_id = :inst
+                WHERE u.institute_id = :inst AND u.role LIKE 'student%'
             ";
             $params = ['inst' => $instituteId];
-            if ($year) {
+            if ($year && $year !== 'all') {
                 $sql .= " AND u.academic_year = :year";
                 $params['year'] = $year;
             }
@@ -815,6 +1152,107 @@ switch ($resource) {
             $stmt->execute($params);
             Database::sendJsonResponse(['ok' => true, 'students' => $stmt->fetchAll()]);
         }
+
+        // 5. DELETE /api/institute/students/{id} -> Detach student
+        if ($action === 'students' && is_numeric($subAction) && $method === 'DELETE') {
+            $targetStudentId = (int)$subAction;
+            $delStmt = $pdo->prepare("
+                UPDATE users 
+                SET institute_id = NULL, role = 'student_independent' 
+                WHERE id = :id AND institute_id = :inst
+            ");
+            $delStmt->execute(['id' => $targetStudentId, 'inst' => $instituteId]);
+
+            if ($delStmt->rowCount() === 0) {
+                Database::sendJsonError('داوطلب مورد نظر در این آموزشگاه یافت نشد.', 404);
+            }
+
+            Database::sendJsonResponse(['ok' => true, 'message' => 'داوطلب با موفقیت از آموزشگاه حذف گردید.']);
+        }
+
+        // 6. GET /api/institute/coworkers
+        if ($action === 'coworkers' && $method === 'GET') {
+            $stmt = $pdo->prepare("
+                SELECT id, full_name, phone, role, created_at
+                FROM users
+                WHERE institute_id = :inst AND role = 'institute'
+                ORDER BY id
+            ");
+            $stmt->execute(['inst' => $instituteId]);
+            $coworkers = $stmt->fetchAll();
+            Database::sendJsonResponse(['ok' => true, 'coworkers' => $coworkers]);
+        }
+
+        // 7. DELETE /api/institute/coworkers/{id}
+        if ($action === 'coworkers' && is_numeric($subAction) && $method === 'DELETE') {
+            $targetCoworkerId = (int)$subAction;
+            if ($targetCoworkerId === (int)$user['id']) {
+                Database::sendJsonError('امکان حذف حساب کاربری جاری خودتان وجود ندارد.', 400);
+            }
+
+            $stmt = $pdo->prepare("UPDATE users SET institute_id = NULL WHERE id = :id AND institute_id = :inst AND role = 'institute'");
+            $stmt->execute(['id' => $targetCoworkerId, 'inst' => $instituteId]);
+
+            if ($stmt->rowCount() === 0) {
+                Database::sendJsonError('مشاور مورد نظر یافت نشد.', 404);
+            }
+
+            Database::sendJsonResponse(['ok' => true, 'message' => 'مشاور با موفقیت از کادر آموزشگاه حذف شد.']);
+        }
+
+        // 8. POST /api/institute/coworkers/invite-link (24-Hour Link)
+        if ($action === 'coworkers' && $subAction === 'invite-link' && $method === 'POST') {
+            $token = 'CW-' . strtoupper(bin2hex(random_bytes(4)));
+            $expiresAt = time() + 86400; // 24 Hours
+
+            $stmt = $pdo->prepare("INSERT INTO counselor_invites (institute_id, token, expires_at) VALUES (:inst, :token, :exp)");
+            $stmt->execute(['inst' => $instituteId, 'token' => $token, 'exp' => $expiresAt]);
+
+            $host = $_SERVER['HTTP_HOST'] ?? 'rasta-app.ir';
+            $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            $inviteUrl = "{$protocol}://{$host}/?counselor_invite={$token}";
+
+            Database::sendJsonResponse([
+                'ok' => true,
+                'token' => $token,
+                'invite_url' => $inviteUrl,
+                'expires_at' => $expiresAt,
+                'message' => 'لینک دعوت ۲۴ ساعته با موفقیت تولید شد.'
+            ]);
+        }
+
+        // 9. POST /api/institute/coworkers/invite-sms
+        if ($action === 'coworkers' && $subAction === 'invite-sms' && $method === 'POST') {
+            $phone = normalizeDigits(trim($body['phone'] ?? ''));
+            $name = trim($body['full_name'] ?? 'همکار گرامی');
+
+            if (!preg_match('/^09[0-9]{9}$/', $phone)) {
+                Database::sendJsonError('شماره همراه نامعتبر است.', 422);
+            }
+
+            $token = 'CW-' . strtoupper(bin2hex(random_bytes(4)));
+            $expiresAt = time() + 86400;
+
+            $stmt = $pdo->prepare("INSERT INTO counselor_invites (institute_id, token, phone, expires_at) VALUES (:inst, :token, :phone, :exp)");
+            $stmt->execute(['inst' => $instituteId, 'token' => $token, 'phone' => $phone, 'exp' => $expiresAt]);
+
+            $host = $_SERVER['HTTP_HOST'] ?? 'rasta-app.ir';
+            $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            $inviteUrl = "{$protocol}://{$host}/?counselor_invite={$token}";
+
+            $smsResult = SmsEngine::send($phone, 'counselor_invite', [
+                'invite_code' => $token,
+                'link' => $inviteUrl
+            ]);
+
+            Database::sendJsonResponse([
+                'ok' => true,
+                'message' => 'دعوت‌نامه با موفقیت پیامک شد.',
+                'dev_sms' => $smsResult,
+                'token' => $token
+            ]);
+        }
+
         break;
 
     // --- COLLABORATIVE 20-SLOT MANAGEMENT ---
@@ -827,10 +1265,10 @@ switch ($resource) {
         // 1. GET /api/slots -> List slots (1 to 20)
         if ($action === '' && $method === 'GET') {
             $stmt = $pdo->prepare("
-                SELECT id, slot_index, title, stream, version, active_editor_id, locked_until, updated_at
+                SELECT id, slot_index, title, stream, custom_ordering_json, version, active_editor_id, locked_until, updated_at
                 FROM scenario_slots
                 WHERE user_id = :user_id
-                ORDER BY slot_index ASC
+                ORDER BY slot_index
             ");
             $stmt->execute(['user_id' => $targetUserId]);
             $slots = $stmt->fetchAll();
@@ -855,7 +1293,7 @@ switch ($resource) {
                 Database::sendJsonError('سقف مجاز ۲۰ چینش تکمیل است.', 400);
             }
 
-            $title = trim($body['title'] ?? '') ?: "سناریوی {$availableIndex}";
+            $title = trim($body['title'] ?? '') ?: "چینش {$availableIndex}";
             $stream = $body['stream'] ?? $user['stream'] ?? 'math';
 
             if (!in_array($stream, ['math', 'experimental', 'humanities'], true)) {
@@ -885,7 +1323,7 @@ switch ($resource) {
 
             Database::sendJsonResponse([
                 'ok' => true,
-                'message' => 'سناریو با موفقیت ذخیره شد.',
+                'message' => 'چینش با موفقیت ذخیره شد.',
                 'slot' => [
                     'id' => (int)$pdo->lastInsertId(),
                     'slot_index' => $availableIndex,
@@ -1125,8 +1563,8 @@ switch ($resource) {
                 if (!preg_match('/^09[0-9]{9}$/', $phone)) {
                     Database::sendJsonError('شماره تلفن معتبر نیست.');
                 }
-                if (strlen($password) < 6) {
-                    Database::sendJsonError('رمز عبور باید حداقل ۶ نویسه باشد.');
+                if (strlen($password) < 8) {
+                    Database::sendJsonError('رمز عبور مدیر ارشد باید حداقل ۸ نویسه باشد.');
                 }
 
                 $hash = password_hash($password, PASSWORD_BCRYPT);
@@ -1304,8 +1742,10 @@ switch ($resource) {
                     $params['institute_id'] = ($role === 'student_affiliated') ? $instituteId : null;
                 }
                 if (!empty($password)) {
-                    if (strlen($password) < 6) {
-                        Database::sendJsonError('رمز عبور باید حداقل ۶ نویسه باشد.');
+                    $effectiveRole = $role ?: $targetCurrentRole;
+                    $minLen = str_starts_with($effectiveRole, 'student') ? 6 : 8;
+                    if (strlen($password) < $minLen) {
+                        Database::sendJsonError("رمز عبور جدید برای این نقش باید حداقل {$minLen} نویسه باشد.");
                     }
                     $updateFields[] = "password_hash = :pwd";
                     $params['pwd'] = password_hash($password, PASSWORD_BCRYPT);
@@ -1373,10 +1813,10 @@ switch ($resource) {
                 }
 
                 if (empty($inviteCode)) {
-                    $inviteCode = 'RASTA-' . strtoupper(bin2hex(random_bytes(3)));
+                    $inviteCode = 'RASTA-' . strtoupper(implode('-', str_split(bin2hex(random_bytes(6)), 4)));
                 } else {
-                    if (!preg_match('/^[A-Z0-9_-]{4,20}$/i', $inviteCode)) {
-                        Database::sendJsonError('کد پیوند باید بین ۴ تا ۲۰ نویسه و شامل حروف انگلیسی، اعداد یا خط تیره باشد.');
+                    if (!preg_match('/^[A-Z0-9_-]{4,30}$/i', $inviteCode)) {
+                        Database::sendJsonError('کد پیوند باید بین ۴ تا ۳۰ نویسه و شامل حروف انگلیسی، اعداد یا خط تیره باشد.');
                     }
                     $inviteCode = strtoupper($inviteCode);
                 }

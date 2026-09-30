@@ -71,9 +71,9 @@ function renderLoggedOutHeader(slot) {
 function renderLoggedInHeader(slot, user) {
     const roleLabels = {
         'admin': { title: 'مدیر کل', url: '/management/admin/' },
-        'institute': { title: 'مشاور آموزشگاه', url: '/management/institute/' },
-        'student_affiliated': { title: 'دانش‌آموز وابسته', url: '/' },
-        'student_independent': { title: 'داوطلب آزاد', url: '/' }
+        'institute': { title: 'مشاور آموزشگاه', url: '/dashboard/institute/' },
+        'student_affiliated': { title: 'دانش‌آموز وابسته', url: '/dashboard/student/' },
+        'student_independent': { title: 'داوطلب آزاد', url: '/dashboard/student/' }
     };
     const roleInfo = roleLabels[user.role] || { title: 'کاربر', url: '/' };
 
@@ -197,9 +197,9 @@ function setupAuthModalListeners() {
                 // If the user is already authenticated, take them directly to their workspace
                 const roleRedirects = {
                     'admin': '/management/admin/',
-                    'institute': '/management/institute/',
-                    'student_affiliated': '/',
-                    'student_independent': '/'
+                    'institute': '/dashboard/institute/',
+                    'student_affiliated': '/dashboard/student/',
+                    'student_independent': '/dashboard/student/'
                 };
                 window.location.href = roleRedirects[currentUser.role] || '/';
             } else {
@@ -525,6 +525,11 @@ function setupAuthModalListeners() {
             invite_code: affiliation === 'affiliated' ? document.getElementById('candInviteCode').value.trim() : ''
         };
 
+        if (payload.password.length < 6) {
+            showAlert('رمز عبور داوطلب باید حداقل ۶ نویسه باشد.');
+            return;
+        }
+
         handleAuthResponse(await postData(`${AUTH_API}/auth/register`, payload));
     });
 
@@ -532,6 +537,13 @@ function setupAuthModalListeners() {
     document.getElementById('formAuthRegisterInstitute').addEventListener('submit', async (e) => {
         e.preventDefault();
         clearAlert();
+
+        const city = document.getElementById('instCity').value.trim();
+        if (!city) {
+            showAlert('نام شهر محل آموزشگاه الزامی است.');
+            document.getElementById('instCity').focus();
+            return;
+        }
 
         const contactPhone = normalizeDigits(document.getElementById('instOfficialPhone').value);
         if (!contactPhone) {
@@ -546,8 +558,14 @@ function setupAuthModalListeners() {
             code: normalizeDigits(document.getElementById('instOtpCode').value),
             password: document.getElementById('instPassword').value.trim(),
             institute_name: document.getElementById('instName').value.trim(),
+            city: city,
             contact_phone: contactPhone
         };
+
+        if (payload.password.length < 8) {
+            showAlert('رمز عبور مشاور باید حداقل ۸ نویسه باشد.');
+            return;
+        }
 
         handleAuthResponse(await postData(`${AUTH_API}/auth/register-institute`, payload));
     });
@@ -655,6 +673,11 @@ function setupAuthModalListeners() {
                 code: normalizeDigits(document.getElementById('resetOtpCode').value),
                 password: document.getElementById('resetNewPassword').value.trim()
             };
+
+            if (payload.password.length < 6) {
+                showAlert('کلمه عبور جدید برای داوطلبان حداقل ۶ نویسه و برای مشاوران حداقل ۸ نویسه است.');
+                return;
+            }
 
             handleAuthResponse(await postData(`${AUTH_API}/auth/reset-password`, payload));
         });
