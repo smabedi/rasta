@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سامانه هوشمند رستا | سناریوساز و چیدمان اولویت‌ها</title>
+    <!--#include virtual="/includes/favicons.html" -->
+    <link rel="stylesheet" href="/css/global.css">
+    <link rel="stylesheet" href="styling.css">
+</head>
+<body class="wizard-body">
+<!--#include virtual="/includes/header.html" -->
+
+<!-- Ambient Wizard Top Bar -->
+<header class="wizard-ambient-bar">
+    <div class="ambient-inner">
+        <div class="ambient-slot-meta">
+            <a href="/dashboard/student" class="btn-back-dashboard" title="بازگشت به پیشخوان">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+                <span>پیشخوان سناریوها</span>
+            </a>
+            <div class="ambient-divider"></div>
+            <div class="slot-badge-wrapper">
+                <span class="slot-chip" id="wizardSlotIndexChip">چینش شماره ۱</span>
+                <h1 class="slot-editable-title" id="wizardSlotTitle" contenteditable="true" spellcheck="false" title="برای تغییر نام کلیک کنید">
+                    چینش شماره ۱
+                </h1>
+                <span class="title-edit-hint">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 20h9"></path>
+                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                        </svg>
+                    </span>
+            </div>
+        </div>
+
+        <div class="ambient-sync-status">
+            <div class="cloud-status-pill saved" id="wizardSyncStatus">
+                <span class="status-indicator-dot"></span>
+                <span class="status-text" id="wizardSyncText">همگام‌سازی ابری فعال</span>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- 5-Step Persistent Breadcrumb Stepper -->
+<nav class="wizard-stepper-strip" aria-label="مراحل فرایند انتخاب رشته">
+    <div class="stepper-inner">
+        <!-- Step 1 (Active) -->
+        <button type="button" class="step-node active" data-step="1" id="stepNode1">
+            <div class="step-num-badge">
+                <span class="step-num">۱</span>
+                <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
+            <div class="step-node-text">
+                <strong class="step-title">ضوابط پایه و دوره‌ها</strong>
+                <span class="step-subtitle">رشته، جنسیت و سهمیه دوره‌ها</span>
+            </div>
+        </button>
+
+        <div class="step-connector"></div>
+
+        <!-- Step 2 -->
+        <button type="button" class="step-node" data-step="2" id="stepNode2">
+            <div class="step-num-badge">
+                <span class="step-num">۲</span>
+                <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
+            <div class="step-node-text">
+                <strong class="step-title">استان و شهرها</strong>
+                <span class="step-subtitle">مطلوبیت بعد مسافت</span>
+            </div>
+        </button>
+
+        <div class="step-connector"></div>
+
+        <!-- Step 3 -->
+        <button type="button" class="step-node" data-step="3" id="stepNode3">
+            <div class="step-num-badge">
+                <span class="step-num">۳</span>
+                <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
+            <div class="step-node-text">
+                <strong class="step-title">رتبه‌بندی دانشگاه‌ها</strong>
+                <span class="step-subtitle">کیفیت علمی مراکز</span>
+            </div>
+        </button>
+
+        <div class="step-connector"></div>
+
+        <!-- Step 4 -->
+        <button type="button" class="step-node" data-step="4" id="stepNode4">
+            <div class="step-num-badge">
+                <span class="step-num">۴</span>
+                <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
+            <div class="step-node-text">
+                <strong class="step-title">رغبت‌سنجی رشته‌ها</strong>
+                <span class="step-subtitle">علاقه و موازنه اوزان</span>
+            </div>
+        </button>
+
+        <div class="step-connector"></div>
+
+        <!-- Step 5 -->
+        <button type="button" class="step-node" data-step="5" id="stepNode5">
+            <div class="step-num-badge">
+                <span class="step-num">۵</span>
+                <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+            </div>
+            <div class="step-node-text">
+                <strong class="step-title">جدول ۱۵۰ انتخاب</strong>
+                <span class="step-subtitle">محاسبه و خروجی سنجش</span>
+            </div>
+        </button>
+    </div>
+</nav>
+
+<!-- Main Wizard Content Canvas -->
+<main class="wizard-main-canvas">
+    <div class="wizard-viewport">
+
+        <!-- STEP 1 PANEL -->
+        <section class="wizard-step-panel active" id="wizardStep1Panel">
+
+            <!-- Section 1: Prepopulated Stream and Gender -->
+            <div class="wizard-card">
+                <div class="wizard-card-header">
+                    <div class="header-icon-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                    <div class="header-content">
+                        <h2 class="card-main-title">مشخصات تحصیلی و هویتی داوطلب</h2>
+                        <p class="card-sub-title">این اطلاعات به طور خودکار از حساب کاربری شما همگام شده و برای فیلتر ضوابط دفترچه سنجش استفاده می‌شود.</p>
+                    </div>
+                </div>
+
+                <div class="grid-two-columns">
+                    <!-- Stream Selector -->
+                    <div class="form-item-wrapper">
+                        <label class="form-field-label">گروه آزمایشی کنکور</label>
+                        <div class="selection-card-group" id="streamSelectorGroup">
+                            <label class="selection-radio-card">
+                                <input type="radio" name="paramStream" value="math">
+                                <div class="card-box">
+                                    <span class="box-title">ریاضی و فیزیک</span>
+                                    <span class="box-desc">فنی مهندسی و علوم پایه</span>
+                                </div>
+                            </label>
+                            <label class="selection-radio-card">
+                                <input type="radio" name="paramStream" value="experimental">
+                                <div class="card-box">
+                                    <span class="box-title">علوم تجربی</span>
+                                    <span class="box-desc">پزشکی، دندان‌پزشکی و پیراپزشکی</span>
+                                </div>
+                            </label>
+                            <label class="selection-radio-card">
+                                <input type="radio" name="paramStream" value="humanities">
+                                <div class="card-box">
+                                    <span class="box-title">علوم انسانی</span>
+                                    <span class="box-desc">حقوق، روان‌شناسی و مدیریت</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Gender Selector -->
+                    <div class="form-item-wrapper">
+                        <label class="form-field-label">جنسیت</label>
+                        <div class="selection-card-group two-items" id="genderSelectorGroup">
+                            <label class="selection-radio-card">
+                                <input type="radio" name="paramGender" value="female">
+                                <div class="card-box">
+                                    <span class="box-title">خانم</span>
+                                    <span class="box-desc">شامل پردیس‌های دخترانه</span>
+                                </div>
+                            </label>
+                            <label class="selection-radio-card">
+                                <input type="radio" name="paramGender" value="male">
+                                <div class="card-box">
+                                    <span class="box-title">آقا</span>
+                                    <span class="box-desc">دانشگاه‌های برادران</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Tri-Coefficient Priority Management (Sliders & Ternary Simplex) -->
+            <div class="wizard-card">
+                <div class="wizard-card-header">
+                    <div class="header-icon-badge">
+                        <!-- Modern 3-Node Simplex Triad Icon (Equilateral) -->
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="5.5" r="2.5"></circle>
+                            <circle cx="4.5" cy="18.5" r="2.5"></circle>
+                            <circle cx="19.5" cy="18.5" r="2.5"></circle>
+                            <path d="M10.75 7.67L5.75 16.33M13.25 7.67L18.25 16.33M7 18.5h10"></path>
+                        </svg>
+                    </div>
+                    <div class="header-content">
+                        <h2 class="card-main-title">موازنه و وزن‌دهی ضرایب سه‌گانه</h2>
+                        <p class="card-sub-title">
+                            میزان اولویت و اهمیت نسبی رشته، دانشگاه و استان را تعیین کنید. مجموع اوزان همواره برابر با ۱۰۰٪ حفظ می‌شود.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="tri-weights-layout">
+                    <!-- Right Column: Auto-Normalizing Sliders -->
+                    <div class="tri-sliders-column">
+                        <!-- Major Slider -->
+                        <div class="tri-slider-card">
+                            <div class="tri-slider-header">
+                                <div class="tri-slider-label-group">
+                                    <span class="tri-slider-title">رشته تحصیلی</span>
+                                    <span class="tri-slider-sub">علاقه به زمینه تحصیلی</span>
+                                </div>
+                                <span class="tri-weight-badge" id="dispWeightAlpha">۵۰٪</span>
+                            </div>
+                            <input type="range" class="score-slider-input tri-range-input" id="sliderWeightAlpha" min="0" max="100" value="50" step="1" style="--fill: 50%;">
+                        </div>
+
+                        <!-- University Slider -->
+                        <div class="tri-slider-card">
+                            <div class="tri-slider-header">
+                                <div class="tri-slider-label-group">
+                                    <span class="tri-slider-title">اعتبار دانشگاه</span>
+                                    <span class="tri-slider-sub">سطح علمی و رتبه آکادمیک</span>
+                                </div>
+                                <span class="tri-weight-badge" id="dispWeightBeta">۳۰٪</span>
+                            </div>
+                            <input type="range" class="score-slider-input tri-range-input" id="sliderWeightBeta" min="0" max="100" value="30" step="1" style="--fill: 30%;">
+                        </div>
+
+                        <!-- Province Slider -->
+                        <div class="tri-slider-card">
+                            <div class="tri-slider-header">
+                                <div class="tri-slider-label-group">
+                                    <span class="tri-slider-title">استان و بعد مسافت</span>
+                                    <span class="tri-slider-sub">نزدیکی به خانواده و هزینه سکونت</span>
+                                </div>
+                                <span class="tri-weight-badge" id="dispWeightGamma">۲۰٪</span>
+                            </div>
+                            <input type="range" class="score-slider-input tri-range-input" id="sliderWeightGamma" min="0" max="100" value="20" step="1" style="--fill: 20%;">
+                        </div>
+                    </div>
+
+                    <!-- Left Column: Ternary Simplex Triangle -->
+                    <div class="tri-triangle-column">
+                        <div class="triangle-container">
+                            <svg id="ternary-svg" class="ternary-svg" viewBox="0 0 320 270">
+                                <polygon class="triangle-base" points="160,28 292,235 28,235"></polygon>
+                                <line class="triangle-grid" x1="160" y1="28" x2="160" y2="235"></line>
+                                <line class="triangle-grid" x1="28" y1="235" x2="226" y2="131"></line>
+                                <line class="triangle-grid" x1="292" y1="235" x2="94" y2="131"></line>
+
+                                <text x="160" y="18" class="triangle-vertex-label">رشته تحصیلی</text>
+                                <text x="284" y="254" class="triangle-vertex-label">دانشگاه</text>
+                                <text x="36" y="254" class="triangle-vertex-label">استان</text>
+
+                                <circle id="ternaryPuck" class="triangle-puck" cx="160" cy="130" r="8"></circle>
+                            </svg>
+                            <span class="triangle-hint">گوی آبی را لمس کرده و به سمت اولویت دلخواه بکشید</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Small Ranking Arena for Admission Regimes -->
+            <div class="wizard-card">
+                <div class="wizard-card-header">
+                    <div class="header-icon-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="3" width="7" height="7"></rect>
+                            <rect x="14" y="14" width="7" height="7"></rect>
+                            <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                    </div>
+                    <div class="header-content">
+                        <h2 class="card-main-title">میدان رتبه‌بندی دوره‌های تحصیلی</h2>
+                        <p class="card-sub-title">
+                            دوره‌های مجاز را از بانک گزینه‌ها به میدان اضافه کنید و به آن‌ها امتیاز (۱ تا ۱۰) اختصاص دهید.
+                            دوره‌هایی که اضافه نمی‌شوند امتیاز <strong>صفر</strong> دریافت کرده و کاملاً از نتایج حذف خواهند شد.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="ranking-arena-wrapper">
+                    <!-- Available Options Pool -->
+                    <div class="arena-available-pool">
+                        <div class="pool-header">
+                            <span class="pool-title">بانک دوره‌های در دسترس جهت افزودن:</span>
+                            <span class="pool-hint">روی هر دوره کلیک کنید تا وارد میدان رتبه‌بندی شود</span>
+                        </div>
+                        <div class="pool-chips-list" id="regimeAvailableChips">
+                            <!-- Chips dynamically populated -->
+                        </div>
+                    </div>
+
+                    <!-- Active Arena Zone -->
+                    <div class="arena-active-zone">
+                        <div class="arena-zone-header">
+                            <span class="arena-zone-title">دوره‌های فعال در این سناریو (مرتب‌سازی با کشیدن و رها کردن):</span>
+                            <span class="arena-items-counter" id="arenaCountBadge">۳ دوره فعال</span>
+                        </div>
+
+                        <div class="arena-drag-list" id="regimeArenaList">
+                            <!-- Draggable Arena Cards dynamically rendered -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 4: Second-Semester (Bahman) Penalty Factor -->
+            <div class="wizard-card">
+                <div class="wizard-card-header">
+                    <div class="header-icon-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                    </div>
+                    <div class="header-content">
+                        <h2 class="card-main-title">سیاست مواجهه با پذیرش نیمسال دوم / بهمن‌ماه</h2>
+                        <p class="card-sub-title">میزان تمایل یا جریمه مطلوبیت برای رشته‌هایی که شروع تحصیل آن‌ها از نیمسال دوم (بهمن) است را مشخص کنید.</p>
+                    </div>
+                </div>
+
+                <div class="semester-options-grid" id="semesterOptionsContainer">
+                    <!-- Option 1: 1.0 -->
+                    <label class="semester-radio-card active">
+                        <input type="radio" name="paramLambdaTerm" value="1.0" checked>
+                        <div class="semester-card-body">
+                            <div class="semester-title-row">
+                                <strong class="semester-name">پذیرش مهرماه و بهمن‌ماه با اولویت برابر</strong>
+                                <span class="factor-badge factor-optimal">ضریب ۱.۰</span>
+                            </div>
+                            <p class="semester-description">
+                                تفاوتی میان شروع تحصیل در مهر یا بهمن قائل نیستم؛ مطلوبیت کد رشته‌های بهمن بدون هیچ کسر امتیازی محاسبه می‌شود.
+                            </p>
+                        </div>
+                    </label>
+
+                    <!-- Option 2: 0.98 -->
+                    <label class="semester-radio-card">
+                        <input type="radio" name="paramLambdaTerm" value="0.98">
+                        <div class="semester-card-body">
+                            <div class="semester-title-row">
+                                <strong class="semester-name">ترجیح نسبی مهر با کسر جزئی بهمن</strong>
+                                <span class="factor-badge factor-high">ضریب ۰.۹۸</span>
+                            </div>
+                            <p class="semester-description">
+                                کد رشته‌های نیمسال دوم تنها ۲ درصد افت مطلوبیت می‌گیرند تا در شرایط امتیاز برابر، مهر در اولویت بالاتر قرار گیرد.
+                            </p>
+                        </div>
+                    </label>
+
+                    <!-- Option 3: 0.80 -->
+                    <label class="semester-radio-card">
+                        <input type="radio" name="paramLambdaTerm" value="0.80">
+                        <div class="semester-card-body">
+                            <div class="semester-title-row">
+                                <strong class="semester-name">اولویت اصلی مهر با کسر ۲۰ درصدی بهمن</strong>
+                                <span class="factor-badge factor-medium">ضریب ۰.۸۰</span>
+                            </div>
+                            <p class="semester-description">
+                                رشته‌های بهمن با ۲۰ درصد جریمه امتیازی محاسبه شوند و صرفاً در صورت عدم قبولی در گزینه‌های مهر لحاظ گردند.
+                            </p>
+                        </div>
+                    </label>
+
+                    <!-- Option 4: 0.0 -->
+                    <label class="semester-radio-card">
+                        <input type="radio" name="paramLambdaTerm" value="0.0">
+                        <div class="semester-card-body">
+                            <div class="semester-title-row">
+                                <strong class="semester-name">صرفاً پذیرش مهر / حذف کامل نیمسال دوم</strong>
+                                <span class="factor-badge factor-zero">ضریب ۰.۰</span>
+                            </div>
+                            <p class="semester-description">
+                                هیچ تمایلی به شروع تحصیل در نیمسال دوم ندارم. کلیه انتخاب‌های ورودی بهمن‌ماه کاملاً از سبد انتخاب من حذف شوند.
+                            </p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Section 5: Admission Evaluation Track & Penalty Factor -->
+            <div class="wizard-card">
+                <div class="wizard-card-header">
+                    <div class="header-icon-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <path d="M9 15l2 2 4-4"></path>
+                        </svg>
+                    </div>
+                    <div class="header-content">
+                        <h2 class="card-main-title">سیاست مواجهه با کدرشته‌های «صرفاً با سوابق تحصیلی»</h2>
+                        <p class="card-sub-title">مشخص کنید کدرشته‌های بدون آزمون (معدل کتبی دیپلم) در مقایسه با رشته‌های کنکوری چگونه در اولویت‌بندی جدول ۱۵۰ تایی لحاظ شوند.</p>
+                    </div>
+                </div>
+
+                <!-- دقیقا از کلاس semester-options-grid استفاده می‌کنیم -->
+                <div class="semester-options-grid" id="admissionOptionsContainer">
+                    <!-- Option 1: فقط با آزمون (سبز / Optimal) -->
+                    <label class="semester-radio-card active">
+                        <input type="radio" name="paramLambdaRecords" value="exam_only" checked>
+                        <div class="semester-card-body">
+                            <div class="semester-title-row">
+                                <strong class="semester-name">صرفاً کدرشته‌های با آزمون (حذف کامل سوابق)</strong>
+                                <span class="factor-badge factor-optimal">فقط با آزمون</span>
+                            </div>
+                            <p class="semester-description">
+                                تمایلی به انتخاب کدرشته‌های بدون آزمون ندارم. کلیه انتخاب‌ها منحصراً از میان رشته‌های متکی به رتبه و تراز کنکور گزینش شوند.
+                            </p>
+                        </div>
+                    </label>
+
+                    <!-- Option 2: رقابت برابر (آبی / High) -->
+                    <label class="semester-radio-card">
+                        <input type="radio" name="paramLambdaRecords" value="1.0">
+                        <div class="semester-card-body">
+                            <div class="semester-title-row">
+                                <strong class="semester-name">سنجش آزاد با آزمون و سوابق (اولویت برابر)</strong>
+                                <span class="factor-badge factor-high">ضریب ۱.۰</span>
+                            </div>
+                            <p class="semester-description">
+                                شیوه پذیرش اثری در ترجیح من ندارد؛ هر دو دسته بدون کسر امتیاز و صرفاً بر پایه کیفیت رشته، دانشگاه و استان رقابت کنند.
+                            </p>
+                        </div>
+                    </label>
+
+                    <!-- Option 3: اولویت دوم (زرد / Medium) -->
+                    <label class="semester-radio-card">
+                        <input type="radio" name="paramLambdaRecords" value="0.70">
+                        <div class="semester-card-body">
+                            <div class="semester-title-row">
+                                <strong class="semester-name">سوابق تحصیلی در اولویت دوم</strong>
+                                <span class="factor-badge factor-medium">ضریب ۰.۷۰</span>
+                            </div>
+                            <p class="semester-description">
+                                اولویت اصلی با رشته‌های کنکوری باشد؛ رشته‌های سوابق با کسر ۳۰ درصدی امتیاز به انتهای فرم هدایت شوند تا مانع عدم قبولی گردند.
+                            </p>
+                        </div>
+                    </label>
+
+                    <!-- Option 4: صرفاً سوابق (قرمز / Zero) -->
+                    <label class="semester-radio-card">
+                        <input type="radio" name="paramLambdaRecords" value="records_only">
+                        <div class="semester-card-body">
+                            <div class="semester-title-row">
+                                <strong class="semester-name">صرفاً بر اساس سوابق تحصیلی (حذف با آزمون)</strong>
+                                <span class="factor-badge factor-zero">فقط سوابق</span>
+                            </div>
+                            <p class="semester-description">
+                                در جلسه کنکور غایب بوده‌ام یا صرفاً مایل به قبولی با معدل نهایی دیپلم هستم؛ کلیه کدرشته‌های نیازمند رتبه کنکور حذف شوند.
+                            </p>
+                        </div>
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 2 PANEL: Geographic Reach & Province Desirability -->
+        <section class="wizard-step-panel" id="wizardStep2Panel">
+            <div class="wizard-card">
+                <div class="wizard-card-header">
+                    <div class="header-icon-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                    </div>
+                    <div class="header-content">
+                        <h2 class="card-main-title">میدان رتبه‌بندی استان‌ها و بعد مسافت</h2>
+                        <p class="card-sub-title">
+                            استان‌های مورد نظر خود را برای ادامه تحصیل انتخاب کرده و بر اساس بعد مسافت و هزینه زندگی به آن‌ها امتیاز (۱ تا ۱۰) دهید.
+                            استان‌هایی که به این میدان اضافه نشوند، امتیاز <strong>صفر</strong> دریافت کرده و کلیه دانشگاه‌های آن‌ها از چیدمان نهایی حذف خواهند شد.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="ranking-arena-wrapper">
+                    <!-- Available Provinces Pool with Search Filter -->
+                    <div class="arena-available-pool">
+                        <div class="pool-header">
+                            <span class="pool-title">بانک استان‌های در دسترس جهت افزودن:</span>
+                            <span class="pool-hint">روی هر استان کلیک کنید تا وارد اولویت‌های شما شود</span>
+                        </div>
+
+                        <!-- Search Filter Input -->
+                        <div class="pool-search-box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <input type="text" class="pool-search-field" id="provinceSearchInput" placeholder="جستجوی سریع نام استان یا استان...">
+                        </div>
+
+                        <div class="pool-chips-list" id="provinceAvailableChips">
+                            <!-- Province Chips populated from data/{stream}/provinces.json -->
+                        </div>
+                    </div>
+
+                    <!-- Active Provinces Arena Zone -->
+                    <div class="arena-active-zone">
+                        <div class="arena-zone-header">
+                            <span class="arena-zone-title">استان‌های فعال در این سناریو (مرتب‌سازی با کشیدن و رها کردن):</span>
+                            <span class="arena-items-counter" id="provinceArenaCountBadge">۳ استان فعال</span>
+                        </div>
+
+                        <div class="arena-drag-list" id="provinceArenaList">
+                            <!-- Draggable Province Cards dynamically rendered -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 3 PANEL: University Scientific Tiering & Large Ranking Arena -->
+        <section class="wizard-step-panel" id="wizardStep3Panel">
+            <div class="wizard-card">
+                <div class="wizard-card-header">
+                    <div class="header-icon-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+                        </svg>
+                    </div>
+                    <div class="header-content">
+                        <h2 class="card-main-title">میدان رتبه‌بندی دانشگاه‌ها</h2>
+                        <p class="card-sub-title">
+                            دانشگاه‌های هدف خود را از بانک جامع آموزش عالی جستجو و اضافه کنید. به کیفیت علمی هر مرکز امتیاز (۱ تا ۱۰) دهید.
+                            دانشگاه‌هایی که به این میدان اضافه نشوند، امتیاز <strong>صفر</strong> گرفته و از خروجی نهایی انتخاب رشته حذف خواهند شد.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="ranking-arena-wrapper">
+                    <!-- Available Universities Large Pool (Search-to-Reveal) -->
+                    <div class="arena-available-pool">
+                        <div class="pool-header">
+                            <span class="pool-title">بانک جامع دانشگاه‌ها:</span>
+                            <span class="pool-hint">نام دانشگاه، استان یا تیپ علمی را جستجو کنید تا گزینه‌ها نمایش داده شوند</span>
+                        </div>
+
+                        <!-- University Search Bar -->
+                        <div class="pool-search-box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <input type="text" class="pool-search-field" id="uniSearchInput" placeholder="جستجوی نام دانشگاه یا استان (مثال: شریف، تهران، امیرکبیر، اصفهان، شیراز)...">
+                        </div>
+
+                        <div class="pool-chips-list" id="uniAvailableChips">
+                            <!-- Populated after search -->
+                        </div>
+                    </div>
+
+                    <!-- Active Universities Arena Zone -->
+                    <div class="arena-active-zone">
+                        <div class="arena-zone-header">
+                            <span class="arena-zone-title">دانشگاه‌های فعال در این سناریو (مرتب‌سازی با کشیدن و رها کردن):</span>
+                            <span class="arena-items-counter" id="uniArenaCountBadge">۳ دانشگاه فعال</span>
+                        </div>
+
+                        <div class="arena-drag-list" id="uniArenaList">
+                            <!-- Draggable University Cards -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 4 PANEL: Major Affinity Clustering & Large Ranking Arena -->
+        <section class="wizard-step-panel" id="wizardStep4Panel">
+            <div class="wizard-card">
+                <div class="wizard-card-header">
+                    <div class="header-icon-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                        </svg>
+                    </div>
+                    <div class="header-content">
+                        <h2 class="card-main-title">میدان رغبت‌سنجی رشته‌های تحصیلی</h2>
+                        <p class="card-sub-title">
+                            رشته‌های مورد علاقه خود را از بانک رشته‌های گروه آزمایشی خود جستجو و اضافه کنید. به میزان علاقه خود به هر رشته امتیاز (۱ تا ۱۰) دهید.
+                            رشته‌هایی که اضافه نشوند، امتیاز <strong>صفر</strong> گرفته و کاملاً از چیدمان نهایی انتخاب رشته حذف خواهند شد.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="ranking-arena-wrapper">
+                    <!-- Available Majors Large Pool (Search-to-Reveal) -->
+                    <div class="arena-available-pool">
+                        <div class="pool-header">
+                            <span class="pool-title">بانک رشته‌های گروه آزمایشی:</span>
+                            <span class="pool-hint">نام رشته مورد نظر خود را جستجو کنید تا گزینه‌ها نمایش داده شوند</span>
+                        </div>
+
+                        <!-- Major Search Bar -->
+                        <div class="pool-search-box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <input type="text" class="pool-search-field" id="majorSearchInput" placeholder="جستجوی نام رشته (مثال: کامپیوتر، برق، پزشکی، حقوق)...">
+                        </div>
+
+                        <div class="pool-chips-list" id="majorAvailableChips">
+                            <!-- Populated after search -->
+                        </div>
+                    </div>
+
+                    <!-- Active Majors Arena Zone -->
+                    <div class="arena-active-zone">
+                        <div class="arena-zone-header">
+                            <span class="arena-zone-title">رشته‌های فعال در این سناریو (مرتب‌‌سازی با کشیدن و رها کردن):</span>
+                            <span class="arena-items-counter" id="majorArenaCountBadge">۳ رشته فعال</span>
+                        </div>
+
+                        <div class="arena-drag-list" id="majorArenaList">
+                            <!-- Draggable Major Cards -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 5 PANEL: 150-Choice Matrix Engine & Sanjesh Submission Drawer -->
+        <section class="wizard-step-panel" id="wizardStep5Panel">
+
+            <!-- Summary Banner & MCDM Optimization Indicator -->
+            <div class="wizard-card matrix-hero-card">
+                <div class="wizard-card-header">
+                    <div class="header-icon-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                            <line x1="3" y1="15" x2="21" y2="15"></line>
+                            <line x1="9" y1="3" x2="9" y2="21"></line>
+                            <line x1="15" y1="3" x2="15" y2="21"></line>
+                        </svg>
+                    </div>
+                    <div class="header-content">
+                        <div class="title-with-actions">
+                            <h2 class="card-main-title">جدول ۱۵۰ انتخاب بهینه‌سازی‌شده رستا</h2>
+                            <div class="matrix-quick-actions">
+                                <div class="recalc-notice-banner" id="recalcNoticeBanner" style="display: none;">
+                                    <span class="notice-text">اگر تنظیمات تغییر کرده است، بهتر است مجدداً محاسبه کنید.</span>
+                                    <button type="button" class="btn-dismiss-notice" id="btnDismissNotice" aria-label="بستن">&times;</button>
+                                </div>
+                                <button type="button" class="btn btn-danger-soft btn-sm" id="btnTriggerRecalculate">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                                        <polyline points="23 4 23 10 17 10"></polyline>
+                                        <polyline points="1 20 1 14 7 14"></polyline>
+                                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                                    </svg>
+                                    <span>محاسبه مجدد</span>
+                                </button>
+                            </div>
+                        </div>
+                        <p class="card-sub-title">
+                            تمامی رشته‌محل‌های معتبر دفترچه بر مبنای مدل تابع مطلوبیت کاب-داگلاس مرتب شده‌اند. ترتیب ردیف‌ها با کشیدن و رها کردن قابل بازچینی است.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Sanjesh Sanity Validator Drawer / Alert Bar -->
+                <div class="matrix-anomaly-banner" id="matrixAnomalyBox" style="display: none;">
+                    <div class="anomaly-icon-badge">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </div>
+                    <div class="anomaly-details">
+                        <strong class="anomaly-title" id="anomalyAlertTitle">اعتبارسنجی منطق سنجش: چند تناقض اولویت شناسایی شد</strong>
+                        <div class="anomaly-list" id="anomalyListContainer">
+                            <!-- Populated dynamically: e.g. Pardis ahead of Day for the same major & university -->
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline anomaly-autofix-btn" id="btnAutoFixAnomalies">
+                        اصلاح خودکار اولویت‌ها
+                    </button>
+                </div>
+
+                <!-- Matrix Filter Toolbar & Live Counts -->
+                <div class="matrix-filter-toolbar">
+                    <div class="matrix-counter-stat">
+                        <span class="pulse-dot-blue"></span>
+                        <strong id="matrixViableCountText">در حال محاسبه و استخراج رشته‌محل‌ها...</strong>
+                    </div>
+
+                    <div class="matrix-filters-group">
+                        <button type="button" class="btn btn-primary btn-sm btn-toolbar-add" id="btnOpenAddChoiceModal">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            <span>افزودن انتخاب دستی</span>
+                        </button>
+
+                        <div class="matrix-search-box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <input type="text" id="matrixSearchInput" class="matrix-search-field" placeholder="جستجوی رشته، دانشگاه، کد ۵ رقمی یا استان...">
+                        </div>
+
+                        <select id="matrixFilterRegime" class="matrix-filter-select">
+                            <option value="all">تمام دوره‌ها</option>
+                            <!-- Populated from active regimes -->
+                        </select>
+
+                        <select id="matrixFilterProvince" class="matrix-filter-select">
+                            <option value="all">تمام استان‌ها</option>
+                            <!-- Populated from active provinces -->
+                        </select>
+
+                        <!-- Export Dropdown -->
+                        <div class="export-dropdown-wrapper" id="exportDropdownWrapper">
+                            <button type="button" class="btn btn-secondary btn-toolbar-export" id="btnExportDropdown" aria-haspopup="true" aria-expanded="false" title="دریافت خروجی از چینش">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="7 10 12 15 17 10"></polyline>
+                                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                                </svg>
+                                <span>خروجی</span>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12" class="export-chevron-icon">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </button>
+
+                            <div class="export-dropdown-menu" id="exportDropdownMenu" role="menu">
+                                <button type="button" class="export-menu-item" id="btnExportExcel" role="menuitem">
+                                    <div class="export-item-icon excel">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                            <polyline points="14 2 14 8 20 8"></polyline>
+                                            <line x1="8" y1="13" x2="16" y2="13"></line>
+                                            <line x1="8" y1="17" x2="16" y2="17"></line>
+                                        </svg>
+                                    </div>
+                                    <div class="export-item-text">
+                                        <span class="export-item-title">خروجی اکسل</span>
+                                        <span class="export-item-desc">قالب رسمی سنجش (.xlsx)</span>
+                                    </div>
+                                </button>
+
+                                <button type="button" class="export-menu-item" id="btnExportPdf" role="menuitem">
+                                    <div class="export-item-icon pdf">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                            <polyline points="14 2 14 8 20 8"></polyline>
+                                            <path d="M9 15h6"></path>
+                                            <path d="M9 11h6"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="export-item-text">
+                                        <span class="export-item-title">خروجی PDF</span>
+                                        <span class="export-item-desc">نسخه چاپی و گزارش سناریو</span>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- High-Density Priority Table -->
+                <div class="matrix-table-container">
+                    <table class="matrix-table" id="priorityMatrixTable">
+                        <thead>
+                        <tr>
+                            <th class="col-rank">ردیف</th>
+                            <th class="col-drag">جابجایی</th>
+                            <th class="col-code">کد رشته</th>
+                            <th class="col-major">عنوان رشته تحصیلی</th>
+                            <th class="col-uni-prov">دانشگاه و استان</th>
+                            <th class="col-regime">دوره</th>
+                            <th class="col-term">نیمسال</th>
+                            <th class="col-admission">پذیرش</th>
+                            <th class="col-actions">حذف</th>
+                        </tr>
+                        </thead>
+                        <tbody id="matrixTableBody" class="matrix-sortable-body">
+                        <!-- 150 Rows injected dynamically -->
+                        </tbody>
+                    </table>
+
+                    <!-- Single 2px Minimalist Royal Blue Drop Indicator -->
+                    <div class="matrix-drop-indicator" id="matrixDropIndicator"></div>
+
+                    <!-- In-Between Row Floating Insertion Guide -->
+                    <div class="matrix-inline-insert-line" id="matrixInlineInsertLine" style="display: none;">
+                        <button type="button" class="matrix-inline-insert-btn" id="matrixInlineInsertBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            <span>درج انتخاب</span>
+                        </button>
+                    </div>
+
+                    <!-- Empty State View -->
+                    <div class="matrix-empty-state" id="matrixEmptyState" style="display: none;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+                        </svg>
+                        <h3>هیچ رشته‌محلی با شرایط و فیلترهای انتخابی شما یافت نشد</h3>
+                        <p>لطفاً در گام‌های قبلی تعداد استان‌ها، دانشگاه‌ها یا رشته‌های فعال را افزایش دهید.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Add Custom Choice Modal -->
+        <div id="addChoiceModal" class="modal-overlay" style="display: none;">
+            <div class="modal-card add-choice-dialog">
+                <div class="add-choice-header">
+                    <div class="add-choice-title-group">
+                        <div class="header-icon-badge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="20" height="20">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                        </div>
+                        <div class="add-choice-title-texts">
+                            <h3 class="dialog-title">افزودن دستی کدرشته به چینش</h3>
+                            <p class="dialog-message">جستجو و انتخاب مستقیم از میان کلیه رشته‌محل‌های دفترچه سنجش</p>
+                        </div>
+                    </div>
+                    <button type="button" class="modal-close-btn" id="btnCloseAddChoiceModal" aria-label="بستن">&times;</button>
+                </div>
+
+                <!-- Target Position Selector Strip -->
+                <div class="add-choice-target-strip">
+                    <div class="target-strip-label">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                            <line x1="8" y1="6" x2="21" y2="6"></line>
+                            <line x1="8" y1="12" x2="21" y2="12"></line>
+                            <line x1="8" y1="18" x2="21" y2="18"></line>
+                            <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                            <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                            <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                        </svg>
+                        <span>موقعیت درج در جدول:</span>
+                    </div>
+                    <div class="target-strip-controls">
+                        <span class="target-rank-prefix">رتبه</span>
+                        <div class="target-stepper-wrap">
+                            <button type="button" class="target-step-btn" id="btnRankMinus" title="کاهش رتبه">−</button>
+                            <input type="text" id="addChoiceTargetRankInput" class="target-rank-field" inputmode="numeric" value="۱">
+                            <button type="button" class="target-step-btn" id="btnRankPlus" title="افزایش رتبه">+</button>
+                        </div>
+                        <span class="target-rank-total" id="addChoiceTotalRankNotice">از میان ۱ انتخاب</span>
+                        <div class="target-quick-pills">
+                            <button type="button" class="target-pill-btn" id="btnTargetStart">ابتدای لیست</button>
+                            <button type="button" class="target-pill-btn" id="btnTargetEnd">انتهای لیست</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search & Filters Toolbar -->
+                <div class="add-choice-filters">
+                    <div class="add-choice-search-box">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" id="addChoiceSearchInput" class="pool-search-field" placeholder="جستجوی عنوان رشته، دانشگاه، شهر یا کد ۵ رقمی...">
+                    </div>
+                    <select id="addChoiceFilterRegime" class="matrix-filter-select">
+                        <option value="all">تمام دوره‌ها</option>
+                    </select>
+                    <select id="addChoiceFilterProvince" class="matrix-filter-select">
+                        <option value="all">تمام استان‌ها</option>
+                    </select>
+                </div>
+
+                <!-- 150 Limit Warning Notice -->
+                <div class="add-choice-limit-warning" id="addChoiceLimitWarning" style="display: none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span>سقف ۱۵۰ انتخاب تکمیل است؛ درج انتخاب جدید، آخرین مورد (رتبه ۱۵۰) را به طور خودکار خارج می‌کند.</span>
+                </div>
+
+                <!-- Results List Container -->
+                <div class="add-choice-results-wrapper">
+                    <!-- Prompt Shown Before Search -->
+                    <div class="add-choice-prompt-state" id="addChoicePromptState">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <p>برای مشاهده و انتخاب، عنوان رشته، دانشگاه یا کد ۵ رقمی را در کادر بالا جستجو کنید.</p>
+                        <span class="prompt-subtext">حداکثر ۲۰ نتیجه مطابق با فیلترهای شما نمایش داده خواهد شد.</span>
+                    </div>
+
+                    <!-- Populated Results List -->
+                    <div class="add-choice-results-list" id="addChoiceResultsList" style="display: none;"></div>
+
+                    <!-- No Results Empty State -->
+                    <div class="add-choice-empty-state" id="addChoiceEmptyState" style="display: none;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <span>موردی مطابق با شرایط و جستجوی شما یافت نشد.</span>
+                    </div>
+                </div>
+
+                <!-- Persistent Modal Footer with Single Action Button -->
+                <div class="add-choice-footer">
+                    <div class="selected-choice-preview" id="selectedChoicePreview">
+                        <span class="preview-empty-text">هنوز رشته‌محلی انتخاب نشده است</span>
+                    </div>
+                    <div class="add-choice-footer-actions">
+                        <button type="button" class="btn btn-secondary" id="btnCancelAddChoice">انصراف</button>
+                        <button type="button" class="btn btn-primary" id="btnConfirmInsertChoice" disabled>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            <span id="btnConfirmInsertText">درج در رتبه ۱</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recalculate Warning Confirmation Modal -->
+        <div id="recalculateConfirmModal" class="modal-overlay" style="display: none;">
+            <div class="modal-card dialog-card">
+                <div class="dialog-icon warning">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <polyline points="1 20 1 14 7 14"></polyline>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                </div>
+                <h3 class="dialog-title">بازنشانی و محاسبه مجدد جدول؟</h3>
+                <p class="dialog-message">
+                    با اجرای این عملیات، تمامی تغییرات دستی، جابجایی ردیف‌ها و موارد حذف‌شده نادیده گرفته شده و فهرست ۱۵۰ انتخابی از نو بر اساس امتیاز ریاضی مدل کاب-داگلاس مرتب خواهد شد.
+                </p>
+                <div class="dialog-actions">
+                    <button type="button" class="btn btn-secondary" id="btnCancelRecalculate">انصراف</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmRecalculate">تایید و بازنشانی کامل</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Sticky Bottom Navigation Dock -->
+<footer class="wizard-bottom-dock">
+    <div class="dock-inner">
+        <div class="dock-prev-zone">
+            <button type="button" class="btn btn-secondary" id="btnPrevStep" disabled>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+                <span>گام قبلی</span>
+            </button>
+        </div>
+
+        <div class="dock-center-info">
+            <span class="dock-validation-hint" id="dockValidationHint">
+                <!-- Standard System Alert (Shown when invalid, r=10) -->
+                <svg class="dock-hint-icon icon-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+
+                <!-- Validation Check Circle (Shown when valid, r=10) -->
+                <svg class="dock-hint-icon icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+
+                <span id="dockValidationText">حداقل یک دوره تحصیلی در میدان رتبه‌بندی الزامی است.</span>
+            </span>
+        </div>
+        <div class="dock-next-zone">
+            <button type="button" class="btn btn-primary" id="btnNextStep">
+                <span>گام بعدی: استان و شهرها</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+        </div>
+    </div>
+</footer>
+
+<!-- Floating Smart Popover for Sanjesh Capacity & Notes -->
+<div id="sanjeshInfoPopover" class="sanjesh-info-popover" style="display: none;"></div>
+
+<!-- Toast Notification Container -->
+<div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+<!--#include virtual="/includes/footer.html" -->
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script src="/js/core.js"></script>
+<script src="/js/auth.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

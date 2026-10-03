@@ -11,6 +11,70 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupAuthModalListeners();
 });
 
+// ============================================================================
+// Coworker Invite Link Listener (?counselor_invite=CW-XXXX)
+// ============================================================================
+document.addEventListener('DOMContentLoaded', async () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const inviteToken = urlParams.get('counselor_invite');
+
+    if (!inviteToken) return;
+
+    try {
+        // 1. Verify token validity with backend
+        const res = await fetch(`/api/auth/invite-info?token=${encodeURIComponent(inviteToken)}`);
+        const data = await res.json();
+
+        if (!res.ok || !data.ok) {
+            alert(data.error || 'لینک دعوت نامعتبر یا منقضی شده است.');
+            return;
+        }
+
+        // 2. Open the auth modal
+        // (Use the openAuthModal helper if auth.js already defines one, or show the modal directly)
+        const authModal = document.getElementById('authModal') || document.querySelector('.auth-modal-overlay');
+        if (authModal) {
+            authModal.style.display = 'flex';
+        }
+
+        // 3. Switch modal from "Login" to "Register" tab
+        const registerTabBtn = document.getElementById('tabRegister') || document.querySelector('[data-tab="register"]');
+        if (registerTabBtn) {
+            registerTabBtn.click();
+        }
+
+        // 4. Fill and lock the invite code input field
+        const inviteInput = document.getElementById('registerInviteCode') || document.querySelector('input[name="invite_code"]');
+        if (inviteInput) {
+            inviteInput.value = data.token;
+            inviteInput.readOnly = true;
+        }
+
+        // 5. Hide student-specific inputs (Konkur stream, gender/year)
+        const streamContainer = document.getElementById('registerStreamGroup') || document.querySelector('.stream-selection-row');
+        if (streamContainer) {
+            streamContainer.style.display = 'none';
+        }
+
+        // 6. Show an informational banner indicating the inviting institute
+        let noticeBanner = document.getElementById('inviteBannerNotice');
+        if (!noticeBanner && authModal) {
+            noticeBanner = document.createElement('div');
+            noticeBanner.id = 'inviteBannerNotice';
+            noticeBanner.style.cssText = 'background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; padding:10px 14px; border-radius:8px; margin-bottom:14px; font-size:0.84rem; text-align:center; font-weight:600;';
+            const modalBody = authModal.querySelector('.modal-card') || authModal;
+            modalBody.prepend(noticeBanner);
+        }
+        if (noticeBanner) {
+            noticeBanner.textContent = `دعوت به همکاری از طرف «${data.institute_name}»`;
+            noticeBanner.style.display = 'block';
+        }
+
+    } catch (err) {
+        console.error('Error verifying coworker invite token:', err);
+    }
+});
+
 function normalizeDigits(val) {
     if (!val) return '';
     return val.toString()
@@ -181,6 +245,12 @@ function escapeHtml(str) {
 
 // 2. Auth Modal Interactivity
 function setupAuthModalListeners() {
+    const modalBackdrop = document.getElementById('authModalBackdrop');
+    // If the auth modal is not present on this page (e.g. builder or dashboards), exit immediately
+    if (!modalBackdrop) {
+        return;
+    }
+
     const backdrop = document.getElementById('authModalBackdrop');
     const closeBtn = document.getElementById('btnCloseAuthModal');
 
