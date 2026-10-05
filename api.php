@@ -435,6 +435,140 @@ switch ($resource) {
     case 'auth':
         $pdo = Database::getConnection();
 
+        // --- 0. VERIFY 24-HOUR COWORKER INVITE LINK ---
+        if ($action === 'coworker-invite' && $method === 'GET') {
+            $token = strtoupper(trim($_GET['token'] ?? ''));
+            if (empty($token)) {
+                Database::sendJsonError('توکن دعوت الزامی است.', 400);
+            }
+
+            $stmt = $pdo->prepare("
+                SELECT ci.id, ci.token, ci.phone, ci.expires_at, ci.used_at, i.id as institute_id, i.name as institute_name
+                FROM counselor_invites ci
+                JOIN institutes i ON i.id = ci.institute_id
+                WHERE UPPER(ci.token) = :token
+                LIMIT 1
+            ");
+            $stmt->execute(['token' => $token]);
+            $invite = $stmt->fetch();
+
+            if (!$invite) {
+                Database::sendJsonError('لینک دعوت معتبر نمی‌باشد یا یافت نشد.', 404);
+            }
+            if (!empty($invite['used_at'])) {
+                Database::sendJsonError('این لینک دعوت قبلاً استفاده شده و منقضی است.', 410);
+            }
+            if ((int)$invite['expires_at'] < time()) {
+                Database::sendJsonError('مهلت ۲۴ ساعته این لینک دعوت به پایان رسیده است.', 410);
+            }
+
+            Database::sendJsonResponse([
+                'ok' => true,
+                'token' => $invite['token'],
+                'institute_id' => (int)$invite['institute_id'],
+                'institute_name' => $invite['institute_name'],
+                'preset_phone' => $invite['phone'] ?? null
+            ]);
+        }
+
+        // --- 0.5 REGISTER COWORKER & LINK TO INSTITUTE ---
+        if ($action === 'register-coworker' && $method === 'POST') {
+            $token = strtoupper(trim($body['token'] ?? ''));
+            $fullName = trim($body['full_name'] ?? '');
+            $phone = normalizeDigits(trim($body['phone'] ?? ''));
+            $code = normalizeDigits(trim($body['code'] ?? ''));
+            $password = trim($body['password'] ?? '');
+
+            if (empty($token)) {
+                Database::sendJsonError('توکن دعوت الزامی است.', 400);
+            }
+            if (empty($fullName)) {
+                Database::sendJsonError('نام و نام خانوادگی مشاور الزامی است.', 422);
+            }
+            if (!preg_match('/^09[0-9]{9}$/', $phone)) {
+                Database::sendJsonError('شماره تلفن همراه نامعتبر است.', 422);
+            }
+            if (empty($code)) {
+                Database::sendJsonError('کد تأیید پیامکی الزامی است.', 422);
+            }
+            if (strlen($password) < 8) {
+                Database::sendJsonError('رمز عبور مشاور باید حداقل ۸ نویسه باشد.', 422);
+            }
+
+            // Verify invite token
+            $cwStmt = $pdo->prepare("
+                SELECT id, institute_id, expires_at, used_at 
+                FROM counselor_invites 
+                WHERE UPPER(token) = :token 
+                LIMIT 1
+            ");
+            $cwStmt->execute(['token' => $token]);
+            $invite = $cwStmt->fetch();
+
+            if (!$invite) {
+                Database::sendJsonError('لینک دعوت نامعتبر است.', 404);
+            }
+            if (!empty($invite['used_at'])) {
+                Database::sendJsonError('این لینک دعوت قبلاً استفاده شده است.', 410);
+            }
+            if ((int)$invite['expires_at'] < time()) {
+                Database::sendJsonError('مهلت ۲۴ ساعته این لینک منقضی شده است.', 410);
+            }
+
+            // Verify OTP
+            Auth::verifyOtp($pdo, $phone, $code);
+
+            // Check phone uniqueness
+            $chk = $pdo->prepare("SELECT id FROM users WHERE phone = :phone LIMIT 1");
+            $chk->execute(['phone' => $phone]);
+            if ($chk->fetch()) {
+                Database::sendJsonError('این شماره تلفن قبلاً در سامانه ثبت شده است. لطفاً وارد شوید.', 409);
+            }
+
+            $pdo->beginTransaction();
+            try {
+                $passwordHash = password_hash($password, PASSWORD_BCRYPT);
+                $stmt = $pdo->prepare("
+                    INSERT INTO users (institute_id, phone, password_hash, full_name, role, stream, gender)
+                    VALUES (:institute_id, :phone, :password_hash, :full_name, 'institute', NULL, NULL)
+                ");
+                $stmt->execute([
+                    'institute_id' => $invite['institute_id'],
+                    'phone' => $phone,
+                    'password_hash' => $passwordHash,
+                    'full_name' => $fullName
+                ]);
+                $userId = (int)$pdo->lastInsertId();
+
+                // Mark invite as used
+                $pdo->prepare("UPDATE counselor_invites SET used_at = :now WHERE id = :id")->execute([
+                    'now' => time(),
+                    'id' => $invite['id']
+                ]);
+
+                $pdo->commit();
+
+                $authToken = Auth::createToken($userId);
+
+                Database::sendJsonResponse([
+                    'ok' => true,
+                    'token' => $authToken,
+                    'redirect' => '/dashboard/institute/',
+                    'message' => 'عضویت شما با موفقیت ثبت شد.',
+                    'user' => [
+                        'id' => $userId,
+                        'phone' => $phone,
+                        'full_name' => $fullName,
+                        'role' => 'institute',
+                        'institute_id' => (int)$invite['institute_id']
+                    ]
+                ], 201);
+            } catch (Exception $e) {
+                $pdo->rollBack();
+                Database::sendJsonError('خطا در ثبت‌نام مشاور: ' . $e->getMessage(), 500);
+            }
+        }
+
         // --- 1. CANDIDATE SIGN-UP ---
         if ($action === 'register' && $method === 'POST') {
             $phone = normalizeDigits(trim($body['phone'] ?? ''));
