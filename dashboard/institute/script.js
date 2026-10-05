@@ -102,6 +102,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             await loadInstituteDetails();
             await loadStudents();
             await loadCoworkers();
+
+            // Auto-reopen student slot inspection view directly
+            const urlParams = new URLSearchParams(window.location.search);
+            const inspectId = urlParams.get('student_id') || urlParams.get('inspect_student');
+            if (inspectId) {
+                switchTab('panelStudents');
+                await openStudentInspection(inspectId);
+            }
         } catch (e) {
             console.error('Institute session initialization failed:', e);
         }
@@ -254,6 +262,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('filterStream').addEventListener('change', renderStudentsTable);
     document.getElementById('filterYear').addEventListener('change', loadStudents);
 
+    function attachStudentInspectListeners() {
+        document.querySelectorAll('.btn-inspect-student').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const sId = btn.getAttribute('data-id');
+                if (sId) openStudentInspection(sId);
+            });
+        });
+    }
+
     function attachStudentRemoveListeners() {
         document.querySelectorAll('.btn-remove-student').forEach(btn => {
             btn.addEventListener('click', async () => {
@@ -270,184 +287,622 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- 6. Live Student Slots Inspection ---
+    // Return back from student inspection to directory list
+    const btnBackToStudentsList = document.getElementById('btnBackToStudentsList');
+    if (btnBackToStudentsList) {
+        btnBackToStudentsList.addEventListener('click', () => {
+            studentInspectionView.style.display = 'none';
+            studentsListView.style.display = 'block';
+            currentInspectedStudent = null;
+
+            // Clear URL query parameters cleanly
+            const cleanUrl = new URL(window.location.href);
+            cleanUrl.searchParams.delete('student_id');
+            cleanUrl.searchParams.delete('inspect_student');
+            window.history.replaceState(null, '', cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
+        });
+    }
+
+    // --- 6. Live Student Slots Inspection (Identical to Student Dashboard) ---
     const studentsListView = document.getElementById('studentsListView');
     const studentInspectionView = document.getElementById('studentInspectionView');
     const inspectSlotsContainer = document.getElementById('inspectSlotsContainer');
 
+    let currentInspectedStudent = null;
+    let currentInspectedSlots = [];
+
     async function openStudentInspection(studentId) {
-        const student = studentsList.find(s => String(s.id) === String(studentId));
-        if (!student) return;
+        if (!studentId) return;
+
+        // 1. Resolve student info from cache or direct API
+        let student = studentsList.find(s => String(s.id) === String(studentId));
+        if (!student) {
+            try {
+                const checkData = await apiFetch(`slots/1?student_id=${studentId}`);
+                if (checkData && checkData.student) {
+                    student = checkData.student;
+                }
+            } catch (err) {
+                console.warn('Direct student metadata fetch fallback failed:', err);
+            }
+        }
+
+        if (!student) {
+            student = {
+                id: studentId,
+                full_name: 'داوطلب انتخابی',
+                stream: 'math',
+                academic_year: '1405'
+            };
+        }
+
+        currentInspectedStudent = student;
 
         const streamTitles = { math: 'ریاضی و فیزیک', experimental: 'علوم تجربی', humanities: 'علوم انسانی' };
         document.getElementById('inspectStudentName').textContent = student.full_name;
         document.getElementById('inspectStudentStream').textContent = streamTitles[student.stream] || student.stream;
         document.getElementById('inspectStudentYear').textContent = `کنکور ${toFa(student.academic_year || '1405')}`;
 
-        inspectSlotsContainer.innerHTML = '<div style="text-align: center; padding: 40px;">در حال بارگذاری چینش‌های داوطلب...</div>';
+        // Switch to the inspection view immediately (one step back)
         studentsListView.style.display = 'none';
         studentInspectionView.style.display = 'block';
+        inspectSlotsContainer.innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted);">در حال بارگذاری چینش‌های داوطلب...</div>';
 
         try {
             const data = await apiFetch(`slots?student_id=${studentId}`);
-            const slots = data?.slots || [];
-            inspectSlotsContainer.innerHTML = '';
+            currentInspectedSlots = data?.slots || [];
+            renderInspectedSlots();
+        } catch (e) {
+            inspectSlotsContainer.innerHTML = '<div style="color: var(--danger-700); padding: 20px; text-align: center;">خطا در دریافت چینش‌های داوطلب.</div>';
+        }
+    }
 
-            if (slots.length === 0) {
-                inspectSlotsContainer.innerHTML = `
-                    <div class="settings-card" style="text-align: center; padding: 40px;">
-                        <p style="color: var(--text-muted); margin: 0;">این داوطلب هنوز هیچ چینشی ایجاد نکرده است.</p>
-                    </div>
-                `;
-                return;
+    function renderInspectedSlots() {
+        inspectSlotsContainer.innerHTML = '';
+
+        if (currentInspectedSlots.length === 0) {
+            inspectSlotsContainer.innerHTML = `
+                <div class="settings-card" style="text-align: center; padding: 40px;">
+                    <p style="color: var(--text-muted); margin: 0;">این داوطلب هنوز هیچ چینشی ایجاد نکرده است.</p>
+                </div>
+            `;
+            return;
+        }
+
+        const streamTitles = {
+            math: { text: 'ریاضی و فیزیک', class: 'slot-stream-math' },
+            experimental: { text: 'علوم تجربی', class: 'slot-stream-experimental' },
+            humanities: { text: 'علوم انسانی', class: 'slot-stream-humanities' }
+        };
+
+        currentInspectedSlots.forEach(slot => {
+            let choices = [];
+            try {
+                choices = typeof slot.custom_ordering_json === 'string'
+                    ? JSON.parse(slot.custom_ordering_json || '[]')
+                    : (slot.custom_ordering_json || []);
+            } catch (e) {
+                choices = [];
             }
 
-            slots.forEach(slot => {
+            const totalChoices = choices.length;
+            const streamInfo = streamTitles[slot.stream] || { text: 'ریاضی و فیزیک', class: 'slot-stream-math' };
+
+            const card = document.createElement('div');
+            card.className = 'slot-card';
+            card.id = `inspect-slot-${slot.slot_index}`;
+            card.dataset.slotIndex = slot.slot_index;
+
+            card.innerHTML = `
+                <div class="slot-card-header">
+                    <div class="slot-badge-title">
+                        <div class="slot-number-chip">${toFa(slot.slot_index)}</div>
+                        <div class="slot-meta">
+                            <div class="slot-title-row">
+                                <h3 class="slot-title">${slot.title || `چینش شماره ${toFa(slot.slot_index)}`}</h3>
+                                <span class="slot-stream-tag ${streamInfo.class}">${streamInfo.text}</span>
+                            </div>
+                            <div class="slot-sub-info">
+                                <span>آخرین ویرایش: ${timeAgo(slot.updated_at)}</span>
+                                <span>•</span>
+                                <span>تعداد کل انتخاب‌ها: <strong>${toFa(totalChoices)}</strong> رشته‌محل</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="slot-card-controls">
+                        <div class="controls-row-top">
+                            <button type="button" class="btn btn-secondary btn-icon-only btn-rename-slot" data-slot="${slot.slot_index}" title="تغییر نام">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-icon-only btn-clone-slot" data-slot="${slot.slot_index}" title="تکثیر چینش">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            </button>
+                            <button type="button" class="btn btn-danger-outline btn-icon-only btn-delete-slot" data-slot="${slot.slot_index}" title="حذف چینش">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-toggle-preview" data-slot="${slot.slot_index}">
+                                <span class="preview-btn-text">پیش‌نمایش جدول</span>
+                            </button>
+                        </div>
+                        <div class="controls-row-bottom">
+                            <button type="button" class="btn btn-secondary btn-edit-manual" data-slot="${slot.slot_index}" title="ویرایش مستقیم جدول اولویت‌ها">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+                                <span>ویرایش دستی (گام ۵)</span>
+                            </button>
+                            <button type="button" class="btn btn-primary btn-open-builder" data-slot="${slot.slot_index}">
+                                <span>سناریوساز کامل</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="slot-preview-wrapper" id="inspect-drawer-${slot.slot_index}">
+                    <div class="preview-toolbar">
+                        <div class="preview-search-box">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <input type="text" class="preview-search-field" placeholder="جستجو در این سناریو (رشته، دانشگاه، استان یا کد ۵ رقمی)..." data-slot="${slot.slot_index}">
+                        </div>
+                        <div class="btn-group-export">
+                            <button type="button" class="btn btn-secondary btn-sm btn-export-excel" data-slot="${slot.slot_index}">خروجی اکسل (.xlsx)</button>
+                            <button type="button" class="btn btn-secondary btn-sm btn-export-pdf" data-slot="${slot.slot_index}">خروجی PDF چاپی</button>
+                        </div>
+                    </div>
+
+                    <div class="preview-scroll-viewport">
+                        <table class="preview-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 44px; text-align: center;">ردیف</th>
+                                    <th style="width: 72px; text-align: center;">کد رشته</th>
+                                    <th>عنوان رشته تحصیلی</th>
+                                    <th>دانشگاه و استان</th>
+                                    <th style="width: 70px; text-align: center;">دوره</th>
+                                    <th style="width: 58px; text-align: center;">نیمسال</th>
+                                    <th style="width: 78px; text-align: center;">پذیرش</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inspect-tbody-${slot.slot_index}">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="preview-footer-action-bar">
+                        <div class="preview-overflow-note">
+                            <span id="inspect-counter-${slot.slot_index}">نمایش ${toFa(totalChoices)} انتخاب</span>
+                        </div>
+                        <button type="button" class="btn btn-secondary btn-close-preview" data-slot="${slot.slot_index}">
+                            بستن پیش‌نمایش
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            inspectSlotsContainer.appendChild(card);
+            renderInspectTbody(slot.slot_index, choices, '');
+        });
+
+        attachInspectSlotListeners();
+    }
+
+    function renderInspectTbody(slotIndex, allChoices, filterQuery = '') {
+        const tbody = document.getElementById(`inspect-tbody-${slotIndex}`);
+        const counter = document.getElementById(`inspect-counter-${slotIndex}`);
+        if (!tbody) return;
+
+        const q = filterQuery.trim().toLowerCase();
+        const filtered = allChoices.filter(item => {
+            if (!q) return true;
+            return (item.major || '').toLowerCase().includes(q) ||
+                (item.uni || '').toLowerCase().includes(q) ||
+                String(item.code || '').includes(q) ||
+                (item.province || '').toLowerCase().includes(q);
+        });
+
+        if (counter) {
+            counter.textContent = q
+                ? `یافت شده: ${toFa(filtered.length)} از میان ${toFa(allChoices.length)} انتخاب`
+                : `نمایش ${toFa(allChoices.length)} انتخاب`;
+        }
+
+        tbody.innerHTML = '';
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                        ${allChoices.length === 0 ? 'هنوز انتخابی برای این سناریو ثبت نشده است.' : 'هیچ انتخابی مطابق با عبارت جستجو یافت نشد.'}
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        filtered.forEach((item, idx) => {
+            const rank = item.rank || (idx + 1);
+            const major = item.major || 'نامشخص';
+            const uni = item.uni || 'دانشگاه سراسری';
+            const prov = item.province ? ` • ${item.province}` : '';
+            const regime = item.regime || 'روزانه';
+            const code = String(item.code || '');
+
+            let regimeClass = 'regime-day';
+            if (regime.includes('دوم') || regime.includes('شبانه')) regimeClass = 'regime-night';
+            if (regime.includes('پردیس') || regime.includes('خودگردان')) regimeClass = 'regime-campus';
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="preview-rank" style="text-align: center;">${toFa(rank)}</td>
+                <td style="text-align: center;">
+                    <span class="matrix-code-chip" data-code="${code}" title="کلیک برای کپی کد رشته">${toFa(code)}</span>
+                </td>
+                <td><strong>${major}</strong></td>
+                <td>${uni}${prov}</td>
+                <td style="text-align: center;"><span class="regime-pill ${regimeClass}">${regime}</span></td>
+                <td style="text-align: center;">
+                    <span class="matrix-term-badge ${item.isBahman ? 'term-bahman' : 'term-mehr'}">${item.isBahman ? 'بهمن' : 'مهر'}</span>
+                </td>
+                <td style="text-align: center;">
+                    <span class="matrix-admission-badge ${item.byExam !== false ? 'admission-exam' : 'admission-records'}">
+                        ${item.byExam !== false ? 'با آزمون' : 'سوابق'}
+                    </span>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        tbody.querySelectorAll('.matrix-code-chip').forEach(chip => {
+            chip.addEventListener('click', async () => {
+                const c = chip.dataset.code;
+                if (!c) return;
+                try {
+                    await navigator.clipboard.writeText(c);
+                    chip.classList.add('copied');
+                    chip.textContent = 'کپی شد ✓';
+                    setTimeout(() => {
+                        chip.classList.remove('copied');
+                        chip.textContent = toFa(c);
+                    }, 1200);
+                } catch (e) {}
+            });
+        });
+    }
+
+    function attachInspectSlotListeners() {
+        if (!currentInspectedStudent) return;
+        const studentId = currentInspectedStudent.id;
+
+        // Toggle Preview
+        document.querySelectorAll('.btn-toggle-preview').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const slotIndex = btn.getAttribute('data-slot');
+                const card = document.getElementById(`inspect-slot-${slotIndex}`);
+                const isOpen = card.classList.toggle('has-preview-open');
+                btn.querySelector('.preview-btn-text').textContent = isOpen ? 'بستن پیش‌نمایش' : 'پیش‌نمایش جدول';
+            });
+        });
+
+        document.querySelectorAll('.btn-close-preview').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const slotIndex = btn.getAttribute('data-slot');
+                const card = document.getElementById(`inspect-slot-${slotIndex}`);
+                card.classList.remove('has-preview-open');
+                const toggleBtn = card.querySelector('.btn-toggle-preview .preview-btn-text');
+                if (toggleBtn) toggleBtn.textContent = 'پیش‌نمایش جدول';
+            });
+        });
+
+        // Search within preview table
+        document.querySelectorAll('.preview-search-field').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const slotIndex = e.target.dataset.slot;
+                const slot = currentInspectedSlots.find(s => String(s.slot_index) === String(slotIndex));
+                if (!slot) return;
                 let choices = [];
                 try {
                     choices = typeof slot.custom_ordering_json === 'string'
                         ? JSON.parse(slot.custom_ordering_json || '[]')
                         : (slot.custom_ordering_json || []);
-                } catch (e) {
-                    choices = [];
-                }
-
-                const totalChoices = choices.length;
-                const topChoices = choices.slice(0, 10);
-
-                let previewRowsHtml = '';
-                if (topChoices.length > 0) {
-                    topChoices.forEach((item, idx) => {
-                        const rank = item.rank || (idx + 1);
-                        const major = item.major || item.major_name || 'نامشخص';
-                        const uni = item.uni || item.uni_name || 'دانشگاه سراسری';
-                        const regime = item.regime || 'روزانه';
-                        const score = Number(item.score || 0).toFixed(2);
-
-                        let regimeClass = 'regime-day';
-                        if (regime.includes('دوم') || regime.includes('شبانه')) regimeClass = 'regime-night';
-                        if (regime.includes('پردیس') || regime.includes('خودگردان')) regimeClass = 'regime-campus';
-
-                        previewRowsHtml += `
-                            <tr>
-                                <td class="preview-rank">${toFa(rank)}</td>
-                                <td><strong>${major}</strong></td>
-                                <td>${uni}</td>
-                                <td><span class="regime-pill ${regimeClass}">${regime}</span></td>
-                                <td><span class="mcdm-score-tag">${toFa(score)}</span></td>
-                            </tr>
-                        `;
-                    });
-                } else {
-                    previewRowsHtml = `
-                        <tr>
-                            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">
-                                هنوز انتخابی برای این چینش ثبت نشده است.
-                            </td>
-                        </tr>
-                    `;
-                }
-
-                const card = document.createElement('div');
-                card.className = 'slot-card';
-                card.id = `inspect-slot-${slot.slot_index}`;
-
-                card.innerHTML = `
-                    <div class="slot-card-header">
-                        <div class="slot-badge-title">
-                            <div class="slot-number-chip">${toFa(slot.slot_index)}</div>
-                            <div class="slot-meta">
-                                <h3 class="slot-title">${slot.title || `چینش شماره ${toFa(slot.slot_index)}`}</h3>
-                                <div class="slot-sub-info">
-                                    <span>آخرین ویرایش: ${timeAgo(slot.updated_at)}</span>
-                                    <span>•</span>
-                                    <span>تعداد کل انتخاب‌ها: ${toFa(totalChoices)} رشته‌محل</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div style="display: flex; gap: 8px;">
-                            <button type="button" class="btn btn-secondary btn-inspect-preview-toggle" data-slot="${slot.slot_index}">
-                                <span class="btn-text">مشاهده ۱۰ انتخاب برتر</span>
-                            </button>
-                            <button type="button" class="btn btn-primary btn-inspect-builder" data-student="${student.id}" data-slot="${slot.slot_index}">
-                                <span>ورود به سناریوساز / ویرایش چینش</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="slot-preview-wrapper" id="inspect-drawer-${slot.slot_index}">
-                        <div class="preview-table-container">
-                            <table class="preview-table">
-                                <thead>
-                                    <tr>
-                                        <th>رتبه</th>
-                                        <th>رشته تحصیلی</th>
-                                        <th>دانشگاه / موسسه</th>
-                                        <th>دوره</th>
-                                        <th>امتیاز مدل</th>
-                                    </tr>
-                                </thead>
-                                <tbody>${previewRowsHtml}</tbody>
-                            </table>
-                            ${topChoices.length > 5 ? '<div class="preview-shading-mask"></div>' : ''}
-                        </div>
-                        <div class="preview-footer-action-bar">
-                            <span style="font-size: 0.82rem; color: var(--text-muted);">نمایش ۱۰ انتخاب نخست از میان ${toFa(totalChoices)} انتخاب</span>
-                            <button type="button" class="btn btn-secondary btn-inspect-preview-close" data-slot="${slot.slot_index}">بستن</button>
-                        </div>
-                    </div>
-                `;
-
-                inspectSlotsContainer.appendChild(card);
+                } catch (err) {}
+                renderInspectTbody(slotIndex, choices, e.target.value);
             });
+        });
 
-            attachSlotInspectionCardListeners();
-        } catch (e) {
-            inspectSlotsContainer.innerHTML = '<div style="color: var(--danger-700); padding: 20px;">خطا در دریافت چینش‌های داوطلب.</div>';
+        // Manual Edit: Direct jump to Step 5
+        document.querySelectorAll('.btn-edit-manual').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const slotIndex = btn.getAttribute('data-slot');
+                window.location.href = `/dashboard/student/builder/?slot=${slotIndex}&student_id=${studentId}&step=5`;
+            });
+        });
+
+        // Open Builder: Standard 5-step flow
+        document.querySelectorAll('.btn-open-builder').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const slotIndex = btn.getAttribute('data-slot');
+                window.location.href = `/dashboard/student/builder/?slot=${slotIndex}&student_id=${studentId}&step=1`;
+            });
+        });
+
+        // Clone Slot
+        document.querySelectorAll('.btn-clone-slot').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const slotIndex = btn.getAttribute('data-slot');
+                try {
+                    await apiFetch(`slots/${slotIndex}/clone?student_id=${studentId}`, { method: 'POST' });
+                    showToast(`چینش شماره ${toFa(slotIndex)} با موفقیت تکثیر شد.`);
+                    await openStudentInspection(studentId);
+                } catch (e) {}
+            });
+        });
+
+        // Delete Slot
+        document.querySelectorAll('.btn-delete-slot').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const slotIndex = btn.getAttribute('data-slot');
+                if (confirm(`آیا از حذف چینش شماره ${toFa(slotIndex)} داوطلب اطمینان دارید؟`)) {
+                    try {
+                        await apiFetch(`slots/${slotIndex}?student_id=${studentId}`, { method: 'DELETE' });
+                        showToast(`چینش شماره ${toFa(slotIndex)} حذف شد.`);
+                        await openStudentInspection(studentId);
+                    } catch (e) {}
+                }
+            });
+        });
+
+        // Rename Slot
+        document.querySelectorAll('.btn-rename-slot').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const slotIndex = btn.getAttribute('data-slot');
+                const currentSlot = currentInspectedSlots.find(s => String(s.slot_index) === String(slotIndex));
+                const newTitle = prompt('عنوان جدید چینش را وارد کنید:', currentSlot ? currentSlot.title : '');
+                if (newTitle && newTitle.trim()) {
+                    try {
+                        await apiFetch(`slots/${slotIndex}?student_id=${studentId}`, {
+                            method: 'PUT',
+                            body: JSON.stringify({ title: newTitle.trim() })
+                        });
+                        showToast('عنوان چینش با موفقیت به‌روزرسانی شد.');
+                        await openStudentInspection(studentId);
+                    } catch (e) {}
+                }
+            });
+        });
+
+        // Export Excel
+        document.querySelectorAll('.btn-export-excel').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const slotIndex = btn.getAttribute('data-slot');
+                const slot = currentInspectedSlots.find(s => String(s.slot_index) === String(slotIndex));
+                if (slot) exportSlotToExcel(slot, currentInspectedStudent);
+            });
+        });
+
+        // Export PDF
+        document.querySelectorAll('.btn-export-pdf').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const slotIndex = btn.getAttribute('data-slot');
+                const slot = currentInspectedSlots.find(s => String(s.slot_index) === String(slotIndex));
+                if (slot) exportSlotToPdf(slot, currentInspectedStudent);
+            });
+        });
+    }
+
+    // Counselor Create New Slot Trigger
+    const btnCounselorCreateSlot = document.getElementById('btnCounselorCreateSlot');
+    if (btnCounselorCreateSlot) {
+        btnCounselorCreateSlot.addEventListener('click', () => {
+            if (!currentInspectedStudent) return;
+            if (currentInspectedSlots.length >= 20) {
+                showToast('حداکثر سقف ۲۰ سناریوی مجاز تکمیل است.', 'error');
+                return;
+            }
+
+            const usedIndices = currentInspectedSlots.map(s => Number(s.slot_index));
+            let nextAvailableSlot = null;
+            for (let i = 1; i <= 20; i++) {
+                if (!usedIndices.includes(i)) {
+                    nextAvailableSlot = i;
+                    break;
+                }
+            }
+
+            if (!nextAvailableSlot) {
+                showToast('سقف ۲۰ سناریو تکمیل است.', 'error');
+                return;
+            }
+
+            window.location.href = `/dashboard/student/builder/?slot=${nextAvailableSlot}&new=1&step=1&student_id=${currentInspectedStudent.id}`;
+        });
+    }
+
+    // --- Standalone Exports Engine for Counselor View ---
+    async function exportSlotToExcel(slot, student) {
+        let choices = [];
+        try {
+            choices = typeof slot.custom_ordering_json === 'string'
+                ? JSON.parse(slot.custom_ordering_json || '[]')
+                : (slot.custom_ordering_json || []);
+        } catch (e) {}
+
+        if (choices.length === 0) {
+            showToast('این سناریو فاقد کدرشته‌های انتخابی برای دریافت فایل اکسل است.', 'error');
+            return;
         }
+
+        if (typeof ExcelJS === 'undefined') {
+            showToast('کتابخانه اکسل هنوز بارگذاری نشده است.', 'error');
+            return;
+        }
+
+        showToast('در حال آماده‌سازی فایل اکسل...');
+        const workbook = new ExcelJS.Workbook();
+        workbook.creator = 'سامانه رستا (OptiMajor)';
+        const sheetTitle = (slot.title || `چینش ${slot.slot_index}`).slice(0, 31);
+        const ws = workbook.addWorksheet(sheetTitle, { views: [{ rightToLeft: true, showGridLines: true }] });
+
+        const streamTitles = { math: 'ریاضی و فیزیک', experimental: 'علوم تجربی', humanities: 'علوم انسانی' };
+        const jalaliDate = new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date());
+
+        ws.mergeCells('A1:H1');
+        const r1 = ws.getCell('A1');
+        r1.value = `سامانه رستا | ${slot.title || `چینش ${slot.slot_index}`} (داوطلب: ${student.full_name})`;
+        r1.font = { name: 'Vazirmatn', family: 2, size: 12, bold: true, color: { argb: 'FF1E3A8A' } };
+        r1.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEBF2FE' } };
+        r1.alignment = { vertical: 'middle', horizontal: 'center' };
+        ws.getRow(1).height = 28;
+
+        ws.mergeCells('A2:H2');
+        const r2 = ws.getCell('A2');
+        r2.value = `داوطلب: ${student.full_name} • گروه: ${streamTitles[slot.stream] || slot.stream} • تعداد انتخاب‌ها: ${choices.length} • تاریخ: ${jalaliDate}`;
+        r2.font = { name: 'Vazirmatn', family: 2, size: 9, color: { argb: 'FF475569' } };
+        r2.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEBF2FE' } };
+        r2.alignment = { vertical: 'middle', horizontal: 'center' };
+        ws.getRow(2).height = 20;
+
+        const headers = ['ردیف', 'کد رشته', 'عنوان رشته تحصیلی', 'دانشگاه', 'استان', 'دوره', 'نیمسال', 'شیوه پذیرش'];
+        const hRow = ws.getRow(4);
+        hRow.height = 26;
+        headers.forEach((h, idx) => {
+            const cell = hRow.getCell(idx + 1);
+            cell.value = h;
+            cell.font = { name: 'Vazirmatn', family: 2, size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E40AF' } };
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        });
+
+        choices.forEach((it, idx) => {
+            const row = ws.getRow(idx + 5);
+            row.height = 20;
+            const vals = [
+                it.rank || idx + 1,
+                parseInt(toEn(it.code), 10) || 0,
+                it.major || '',
+                it.uni || '',
+                it.province || '',
+                it.regime || '',
+                it.isBahman ? 'بهمن' : 'مهر',
+                it.byExam !== false ? 'با آزمون' : 'سوابق'
+            ];
+            vals.forEach((v, cIdx) => {
+                const cell = row.getCell(cIdx + 1);
+                cell.value = v;
+                cell.font = { name: 'Vazirmatn', family: 2, size: 9 };
+                cell.alignment = { vertical: 'middle', horizontal: (cIdx === 2 || cIdx === 3) ? 'right' : 'center' };
+                if (cIdx === 1) cell.numFmt = '00000';
+            });
+        });
+
+        ws.columns = [
+            { width: 8 }, { width: 14 }, { width: 34 }, { width: 32 },
+            { width: 16 }, { width: 16 }, { width: 12 }, { width: 16 }
+        ];
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const studentName = (student && student.full_name) ? student.full_name : 'داوطلب';
+        const safeName = `${studentName}-${slot.title || 'scenario'}`.replace(/[\\/:*?"<>|]/g, '_');
+        a.download = `${safeName}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('فایل اکسل با موفقیت دانلود شد.');
     }
 
-    function attachStudentInspectListeners() {
-        document.querySelectorAll('.btn-inspect-student').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const sId = btn.getAttribute('data-id');
-                openStudentInspection(sId);
-            });
-        });
-    }
+    function exportSlotToPdf(slot, student) {
+        const studentName = (student && student.full_name) ? student.full_name : 'داوطلب';
 
-    document.getElementById('btnBackToStudentsList').addEventListener('click', () => {
-        studentInspectionView.style.display = 'none';
-        studentsListView.style.display = 'block';
-    });
+        let choices = [];
+        try {
+            choices = typeof slot.custom_ordering_json === 'string'
+                ? JSON.parse(slot.custom_ordering_json || '[]')
+                : (slot.custom_ordering_json || []);
+        } catch (e) {}
 
-    function attachSlotInspectionCardListeners() {
-        document.querySelectorAll('.btn-inspect-preview-toggle').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const sIdx = btn.getAttribute('data-slot');
-                const card = document.getElementById(`inspect-slot-${sIdx}`);
-                const isOpen = card.classList.toggle('has-preview-open');
-                btn.querySelector('.btn-text').textContent = isOpen ? 'بستن پیش‌نمایش' : 'مشاهده ۱۰ انتخاب برتر';
-            });
-        });
+        if (choices.length === 0) {
+            showToast('این سناریو فاقد کدرشته‌های انتخابی برای دریافت نسخه چاپی است.', 'error');
+            return;
+        }
 
-        document.querySelectorAll('.btn-inspect-preview-close').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const sIdx = btn.getAttribute('data-slot');
-                const card = document.getElementById(`inspect-slot-${sIdx}`);
-                card.classList.remove('has-preview-open');
-                const toggleBtn = card.querySelector('.btn-inspect-preview-toggle .btn-text');
-                if (toggleBtn) toggleBtn.textContent = 'مشاهده ۱۰ انتخاب برتر';
-            });
-        });
+        const streamTitles = { math: 'ریاضی و فیزیک', experimental: 'علوم تجربی', humanities: 'علوم انسانی' };
+        const jalaliDate = new Intl.DateTimeFormat('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date());
 
-        document.querySelectorAll('.btn-inspect-builder').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const sId = btn.getAttribute('data-student');
-                const slot = btn.getAttribute('data-slot');
-                window.location.href = `/dashboard/student/builder.html?slot=${slot}&student_id=${sId}`;
-            });
-        });
+        const rowsHtml = choices.map((item, idx) => `
+            <tr>
+                <td style="text-align: center; font-weight: 700; color: #1e40af;">${toFa(item.rank || idx + 1)}</td>
+                <td style="text-align: center;"><span style="font-family: inherit; font-weight: 700;">${toFa(item.code)}</span></td>
+                <td><strong>${item.major || ''}</strong></td>
+                <td>${item.uni || ''}</td>
+                <td style="text-align: center;">${item.province || ''}</td>
+                <td style="text-align: center;">${item.regime || ''}</td>
+                <td style="text-align: center;">${item.isBahman ? 'بهمن' : 'مهر'}</td>
+                <td style="text-align: center;">${item.byExam !== false ? 'با آزمون' : 'سوابق'}</td>
+            </tr>
+        `).join('');
+
+        const html = `
+            <!DOCTYPE html>
+            <html lang="fa" dir="rtl">
+            <head>
+                <meta charset="UTF-8">
+                <title>${studentName} - ${slot.title || 'گزارش چیدمان رستا'}</title>
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css">
+                <style>
+                    @page { size: A4 portrait; margin: 10mm; }
+                    body { font-family: 'Vazirmatn', sans-serif; font-size: 8pt; direction: rtl; margin: 0; color: #0f172a; }
+                    .header { border: 1.5px solid #1e40af; background: #eff6ff; padding: 10px 14px; border-radius: 6px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+                    table { width: 100%; border-collapse: collapse; }
+                    th { background: #1e40af; color: #ffffff; padding: 6px 4px; font-size: 7.6pt; border: 1px solid #1e3a8a; }
+                    td { padding: 4px; border: 1px solid #e2e8f0; font-size: 7.2pt; }
+                    tr:nth-child(even) { background: #f8fafc; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div>
+                        <strong style="font-size: 10pt; color: #1e3a8a;">سامانه رستا | ${slot.title || `چینش ${slot.slot_index}`} (داوطلب: ${studentName})</strong>
+                        <div style="font-size: 7.5pt; color: #64748b;">گزارش رسمی اولویت‌های داوطلب تحت نظارت آموزشگاه</div>
+                    </div>
+                    <div style="font-size: 7.5pt; text-align: left;">
+                        <span>گروه: <strong>${streamTitles[slot.stream] || slot.stream}</strong></span> |
+                        <span>انتخاب‌ها: <strong>${toFa(choices.length)}</strong></span> |
+                        <span>تاریخ: <strong>${jalaliDate}</strong></span>
+                    </div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ردیف</th><th>کد رشته</th><th>عنوان رشته تحصیلی</th><th>دانشگاه</th><th>استان</th><th>دوره</th><th>نیمسال</th><th>پذیرش</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rowsHtml}</tbody>
+                </table>
+            </body>
+            </html>
+        `;
+
+        const frame = document.createElement('iframe');
+        frame.style.position = 'fixed';
+        frame.style.right = '0';
+        frame.style.bottom = '0';
+        frame.style.width = '0';
+        frame.style.height = '0';
+        frame.style.border = '0';
+        document.body.appendChild(frame);
+
+        const doc = frame.contentDocument || frame.contentWindow.document;
+        doc.open();
+        doc.write(html);
+        doc.close();
+
+        setTimeout(() => {
+            frame.contentWindow.focus();
+            frame.contentWindow.print();
+            setTimeout(() => document.body.removeChild(frame), 2000);
+        }, 500);
     }
 
     // --- 7. Coworkers Team & Removal Flow ---

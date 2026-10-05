@@ -160,8 +160,17 @@
                     <div class="hero-content">
                         <h2 class="hero-title" style="font-size: 1.15rem;">چینش‌های اختصاصی داوطلب</h2>
                         <p class="hero-description">
-                            شما به عنوان مشاور مجاز می‌توانید اولویت‌بندی‌ها را بررسی کنید، پیش‌نمایش ۱۰ انتخاب برتر را ببینید و وارد سناریوساز شوید.
+                            شما به عنوان مشاور مجاز می‌توانید اولویت‌بندی‌ها را بررسی کنید، پیش‌نمایش جدول انتخاب‌ها را ببینید، خروجی دریافت کنید و وارد سناریوساز شوید.
                         </p>
+                    </div>
+                    <div class="hero-actions">
+                        <button type="button" class="btn btn-primary" id="btnCounselorCreateSlot">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            <span>ایجاد چینش جدید</span>
+                        </button>
                     </div>
                 </div>
 
@@ -519,6 +528,7 @@
 <div id="toastContainer" class="toast-container" aria-live="polite"></div>
 
 <!--#include virtual="/includes/footer.html" -->
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 <script src="/js/core.js"></script>
 <script src="/js/auth.js"></script>
 <script src="script.js"></script>

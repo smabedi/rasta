@@ -198,14 +198,20 @@ class Auth {
     }
 
     public static function getCurrentUser(): ?array {
-        $headers = getallheaders();
-        $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+        $headers = function_exists('getallheaders') ? getallheaders() : [];
+        $authHeader = $headers['Authorization']
+            ?? $headers['authorization']
+            ?? $_SERVER['HTTP_AUTHORIZATION']
+            ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION']
+            ?? '';
 
         $token = null;
         if (preg_match('/Bearer\s+(\S+)/i', $authHeader, $matches)) {
             $token = $matches[1];
         } elseif (!empty($_COOKIE['rasta_token'])) {
             $token = $_COOKIE['rasta_token'];
+        } elseif (!empty($GLOBALS['body']['token'])) {
+            $token = $GLOBALS['body']['token'];
         }
 
         if (!$token) {
@@ -254,15 +260,16 @@ class Auth {
      * IDOR Guard: Resolves whether the current user is permitted to inspect/modify a student's slots
      */
     public static function resolveTargetStudentId(array $currentUser, PDO $pdo): int {
-        if (!isset($_GET['student_id'])) {
-            // Guard: Non-students must explicitly specify which student's slot workspace they are accessing
+        $targetIdParam = $_GET['student_id'] ?? $GLOBALS['body']['student_id'] ?? null;
+
+        if ($targetIdParam === null) {
             if (in_array($currentUser['role'], ['admin', 'institute'], true)) {
                 Database::sendJsonError('مشاوران و مدیران باید شناسه داوطلب (student_id) را در درخواست مشخص نمایند.', 400);
             }
             return (int)$currentUser['id'];
         }
 
-        $targetId = (int)$_GET['student_id'];
+        $targetId = (int)$targetIdParam;
         if ($targetId === (int)$currentUser['id']) {
             return $targetId;
         }
@@ -359,6 +366,13 @@ class SmsEngine {
 
 // Request Routing
 $endpoint = trim($_GET['endpoint'] ?? '', '/');
+if ($endpoint === '') {
+    $uriPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
+    if (str_starts_with($uriPath, '/api/')) {
+        $endpoint = trim(substr($uriPath, 5), '/');
+    }
+}
+
 $segments = $endpoint !== '' ? explode('/', $endpoint) : [];
 $resource = $segments[0] ?? '';
 $action = $segments[1] ?? '';
@@ -432,26 +446,37 @@ switch ($resource) {
             $academicYear = trim($body['academic_year'] ?? '04-05');
             $inviteCode = strtoupper(trim($body['invite_code'] ?? ''));
 
+            // Check if this is a coworker invite first
+            $cwStmt = $pdo->prepare("SELECT id, institute_id FROM counselor_invites WHERE token = :token AND expires_at > :now AND used_at IS NULL LIMIT 1");
+            $cwStmt->execute(['token' => $inviteCode, 'now' => time()]);
+            $cwInvite = $cwStmt->fetch();
+            $isCoworker = (bool)$cwInvite;
+
             if (!preg_match('/^09[0-9]{9}$/', $phone)) {
                 Database::sendJsonError('شماره تلفن همراه نامعتبر است.');
             }
             if (empty($code)) {
                 Database::sendJsonError('کد تأیید پیامکی الزامی است.');
             }
-            if (strlen($password) < 6) {
-                Database::sendJsonError('رمز عبور باید حداقل ۶ نویسه باشد.');
+
+            $minPass = $isCoworker ? 8 : 6;
+            if (strlen($password) < $minPass) {
+                Database::sendJsonError("رمز عبور باید حداقل {$minPass} نویسه باشد.");
             }
             if (empty($fullName)) {
-                Database::sendJsonError('نام و نام خانوادگی داوطلب الزامی است.');
-            }
-            if (!in_array($stream, ['math', 'experimental', 'humanities'], true)) {
-                Database::sendJsonError('گروه آزمایشی معتبر نمی‌باشد.');
-            }
-            if (!in_array($gender, ['male', 'female'], true)) {
-                Database::sendJsonError('جنسیت داوطلب الزامی است.');
+                Database::sendJsonError('نام و نام خانوادگی الزامی است.');
             }
 
-            // Verify OTP with brute-force protection
+            // Only require stream & gender for students
+            if (!$isCoworker) {
+                if (!in_array($stream, ['math', 'experimental', 'humanities'], true)) {
+                    Database::sendJsonError('گروه آزمایشی معتبر نمی‌باشد.');
+                }
+                if (!in_array($gender, ['male', 'female'], true)) {
+                    Database::sendJsonError('جنسیت داوطلب الزامی است.');
+                }
+            }
+
             Auth::verifyOtp($pdo, $phone, $code);
 
             // Ensure phone is unique
@@ -464,7 +489,17 @@ switch ($resource) {
             $instituteId = null;
             $role = 'student_independent';
 
-            if (!empty($inviteCode)) {
+            // Check if invite code matches a 24-hour counselor invite (CW-XXXX)
+            $coworkerToken = strtoupper($inviteCode);
+            $cwStmt = $pdo->prepare("SELECT id, institute_id FROM counselor_invites WHERE token = :token AND expires_at > :now AND used_at IS NULL LIMIT 1");
+            $cwStmt->execute(['token' => $coworkerToken, 'now' => time()]);
+            $cwInvite = $cwStmt->fetch();
+
+            if ($cwInvite) {
+                $instituteId = (int)$cwInvite['institute_id'];
+                $role = 'institute';
+                $pdo->prepare("UPDATE counselor_invites SET used_at = :now WHERE id = :id")->execute(['now' => time(), 'id' => $cwInvite['id']]);
+            } elseif (!empty($inviteCode)) {
                 $instStmt = $pdo->prepare("SELECT id, accepts_new_students FROM institutes WHERE invite_code = :code LIMIT 1");
                 $instStmt->execute(['code' => $inviteCode]);
                 $inst = $instStmt->fetch();
@@ -502,6 +537,11 @@ switch ($resource) {
 
                 $pdo->commit();
 
+                $redirectUrl = match ($role) {
+                    'institute' => '/dashboard/institute/',
+                    default => '/dashboard/student/'
+                };
+
                 Database::sendJsonResponse([
                     'ok' => true,
                     'token' => $token,
@@ -515,7 +555,7 @@ switch ($resource) {
                         'academic_year' => $academicYear,
                         'institute_id' => $instituteId
                     ],
-                    'redirect' => '/dashboard/student/'
+                    'redirect' => $redirectUrl
                 ], 201);
             } catch (Exception $e) {
                 $pdo->rollBack();
@@ -825,6 +865,40 @@ switch ($resource) {
                 'message' => 'کلمه عبور با موفقیت تغییر یافت.'
             ]);
         }
+
+        // GET /api/auth/invite-info?token=CW-XXXX
+        if ($action === 'invite-info' && $method === 'GET') {
+            $token = strtoupper(trim($_GET['token'] ?? ''));
+            if (empty($token)) {
+                Database::sendJsonError('توکن دعوت الزامی است.', 400);
+            }
+
+            $stmt = $pdo->prepare("
+                SELECT ci.id, ci.token, ci.expires_at, ci.used_at, i.name AS institute_name
+                FROM counselor_invites ci
+                JOIN institutes i ON i.id = ci.institute_id
+                WHERE ci.token = :token LIMIT 1
+            ");
+            $stmt->execute(['token' => $token]);
+            $invite = $stmt->fetch();
+
+            if (!$invite) {
+                Database::sendJsonError('لینک دعوت معتبر نمی‌باشد یا یافت نشد.', 404);
+            }
+            if (!empty($invite['used_at'])) {
+                Database::sendJsonError('این لینک دعوت قبلاً استفاده شده است.', 410);
+            }
+            if ((int)$invite['expires_at'] < time()) {
+                Database::sendJsonError('مهلت ۲۴ ساعته این لینک دعوت به پایان رسیده است.', 410);
+            }
+
+            Database::sendJsonResponse([
+                'ok' => true,
+                'token' => $invite['token'],
+                'institute_name' => $invite['institute_name']
+            ]);
+        }
+        break;
 
     // --- USER PROFILE & ACCOUNT MANAGEMENT ---
 
@@ -1265,7 +1339,7 @@ switch ($resource) {
         // 1. GET /api/slots -> List slots (1 to 20)
         if ($action === '' && $method === 'GET') {
             $stmt = $pdo->prepare("
-                SELECT id, slot_index, title, stream, custom_ordering_json, version, active_editor_id, locked_until, updated_at
+                SELECT id, slot_index, title, stream, preferences_json, custom_ordering_json, version, active_editor_id, locked_until, updated_at
                 FROM scenario_slots
                 WHERE user_id = :user_id
                 ORDER BY slot_index
@@ -1275,7 +1349,7 @@ switch ($resource) {
             Database::sendJsonResponse(['ok' => true, 'slots' => $slots]);
         }
 
-        // 1.5 POST /api/slots -> Create and dump wizard scenario into a slot
+        // 1.5 POST /api/slots -> Create and dump wizard scenario into next available slot
         if ($action === '' && $method === 'POST') {
             $usedSlotsStmt = $pdo->prepare("SELECT slot_index FROM scenario_slots WHERE user_id = :user_id");
             $usedSlotsStmt->execute(['user_id' => $targetUserId]);
@@ -1293,14 +1367,17 @@ switch ($resource) {
                 Database::sendJsonError('سقف مجاز ۲۰ چینش تکمیل است.', 400);
             }
 
+            $targetStudentStmt = $pdo->prepare("SELECT stream FROM users WHERE id = :id LIMIT 1");
+            $targetStudentStmt->execute(['id' => $targetUserId]);
+            $studentDefaultStream = $targetStudentStmt->fetchColumn() ?: 'math';
+
             $title = trim($body['title'] ?? '') ?: "چینش {$availableIndex}";
-            $stream = $body['stream'] ?? $user['stream'] ?? 'math';
+            $stream = $body['preferences']['stream'] ?? $body['stream'] ?? $studentDefaultStream;
 
             if (!in_array($stream, ['math', 'experimental', 'humanities'], true)) {
-                Database::sendJsonError('گروه آزمایشی چینش نامعتبر است.', 400);
+                $stream = 'math';
             }
 
-            // Accept wizard dump directly, or fall back to empty defaults
             $preferencesJson = isset($body['preferences'])
                 ? json_encode($body['preferences'], JSON_UNESCAPED_UNICODE)
                 : '{}';
@@ -1334,27 +1411,51 @@ switch ($resource) {
             ], 201);
         }
 
-        // 2. GET /api/slots/{index} -> Load slot
+        // 2. GET /api/slots/{index} -> Load slot & target student metadata
         if (is_numeric($action) && $subAction === '' && $method === 'GET') {
             $slotIndex = (int)$action;
 
-            $stmt = $pdo->prepare("SELECT * FROM scenario_slots WHERE user_id = :user_id AND slot_index = :slot_index LIMIT 1");
+            $uStmt = $pdo->prepare("SELECT id, full_name, stream, gender, role FROM users WHERE id = :id LIMIT 1");
+            $uStmt->execute(['id' => $targetUserId]);
+            $studentMeta = $uStmt->fetch();
+
+            $stmt = $pdo->prepare("
+                SELECT s.*, u.full_name as editor_name
+                FROM scenario_slots s
+                LEFT JOIN users u ON u.id = s.active_editor_id
+                WHERE s.user_id = :user_id AND s.slot_index = :slot_index
+                LIMIT 1
+            ");
             $stmt->execute(['user_id' => $targetUserId, 'slot_index' => $slotIndex]);
             $slot = $stmt->fetch();
 
             if (!$slot) {
-                Database::sendJsonError('چینش مورد نظر یافت نشد.', 404);
+                Database::sendJsonResponse([
+                    'ok' => true,
+                    'exists' => false,
+                    'slot' => null,
+                    'student' => $studentMeta
+                ]);
             }
+
+            $isLocked = ((int)$slot['locked_until'] > time()) && ((int)$slot['active_editor_id'] !== (int)$user['id']);
 
             $decodedPref = json_decode($slot['preferences_json'], true);
             $slot['preferences'] = !empty($decodedPref) ? $decodedPref : new stdClass();
             $slot['custom_ordering'] = json_decode($slot['custom_ordering_json'], true) ?: [];
             unset($slot['preferences_json'], $slot['custom_ordering_json']);
 
-            Database::sendJsonResponse(['ok' => true, 'slot' => $slot]);
+            Database::sendJsonResponse([
+                'ok' => true,
+                'exists' => true,
+                'slot' => $slot,
+                'student' => $studentMeta,
+                'is_locked' => $isLocked,
+                'locked_by' => $isLocked ? $slot['editor_name'] : null
+            ]);
         }
 
-        // 3. PUT /api/slots/{index} -> Update slot
+        // 3. PUT /api/slots/{index} -> Update slot with stream synchronization
         if (is_numeric($action) && $subAction === '' && $method === 'PUT') {
             $slotIndex = (int)$action;
             $title = $body['title'] ?? null;
@@ -1362,15 +1463,53 @@ switch ($resource) {
             $customOrdering = isset($body['custom_ordering']) ? json_encode($body['custom_ordering'], JSON_UNESCAPED_UNICODE) : null;
             $clientVersion = (int)($body['version'] ?? 0);
 
-            $checkStmt = $pdo->prepare("SELECT version, locked_until, active_editor_id FROM scenario_slots WHERE user_id = :user_id AND slot_index = :slot_index");
+            $stream = null;
+            if (isset($body['preferences']['stream']) && in_array($body['preferences']['stream'], ['math', 'experimental', 'humanities'], true)) {
+                $stream = $body['preferences']['stream'];
+            } elseif (isset($body['stream']) && in_array($body['stream'], ['math', 'experimental', 'humanities'], true)) {
+                $stream = $body['stream'];
+            }
+
+            $checkStmt = $pdo->prepare("SELECT id, version, locked_until, active_editor_id FROM scenario_slots WHERE user_id = :user_id AND slot_index = :slot_index");
             $checkStmt->execute(['user_id' => $targetUserId, 'slot_index' => $slotIndex]);
             $current = $checkStmt->fetch();
 
+            // Auto-create row on first save from wizard builder
             if (!$current) {
-                Database::sendJsonError('چینش مورد نظر یافت نشد.', 404);
+                $targetStudentStmt = $pdo->prepare("SELECT stream FROM users WHERE id = :id LIMIT 1");
+                $targetStudentStmt->execute(['id' => $targetUserId]);
+                $studentDefaultStream = $targetStudentStmt->fetchColumn() ?: 'math';
+
+                $finalStream = $stream ?? $studentDefaultStream;
+                if (!in_array($finalStream, ['math', 'experimental', 'humanities'], true)) {
+                    $finalStream = 'math';
+                }
+
+                $defaultTitle = $title ?: "چینش شماره {$slotIndex}";
+                $insStmt = $pdo->prepare("
+                    INSERT INTO scenario_slots (user_id, slot_index, title, stream, preferences_json, custom_ordering_json, version, active_editor_id, locked_until)
+                    VALUES (:user_id, :slot_index, :title, :stream, :pref, :ordering, 1, :editor_id, :locked_until)
+                ");
+                $insStmt->execute([
+                    'user_id' => $targetUserId,
+                    'slot_index' => $slotIndex,
+                    'title' => $defaultTitle,
+                    'stream' => $finalStream,
+                    'pref' => $preferences ?: '{}',
+                    'ordering' => $customOrdering ?: '[]',
+                    'editor_id' => $user['id'],
+                    'locked_until' => time() + 30
+                ]);
+
+                Database::sendJsonResponse([
+                    'ok' => true,
+                    'created' => true,
+                    'version' => 1,
+                    'updated_at' => date('Y-m-d H:i:s')
+                ], 201);
             }
 
-            // 1. Mutex Lock Check: Prevent overwriting another active user's session
+            // Mutex Lock Check: Prevent overwriting another active user's session
             $isLocked = ((int)$current['locked_until'] > time()) && ((int)$current['active_editor_id'] !== (int)$user['id']);
             if ($isLocked) {
                 $editorStmt = $pdo->prepare("SELECT full_name FROM users WHERE id = :id LIMIT 1");
@@ -1395,6 +1534,7 @@ switch ($resource) {
             $updateStmt = $pdo->prepare("
                 UPDATE scenario_slots
                 SET title = COALESCE(:title, title),
+                    stream = COALESCE(:stream, stream),
                     preferences_json = COALESCE(:pref, preferences_json),
                     custom_ordering_json = COALESCE(:ordering, custom_ordering_json),
                     version = :version,
@@ -1405,6 +1545,7 @@ switch ($resource) {
             ");
             $updateStmt->execute([
                 'title' => $title,
+                'stream' => $stream,
                 'pref' => $preferences,
                 'ordering' => $customOrdering,
                 'version' => $newVersion,
@@ -1417,11 +1558,11 @@ switch ($resource) {
             Database::sendJsonResponse([
                 'ok' => true,
                 'version' => $newVersion,
-                'updated_at' => date('Y-m-d H:i:s')
+                'updated_at' => gmdate('Y-m-d H:i:s')
             ]);
         }
 
-        // 4. DELETE /api/slots/{index} -> Delete any slot (1 to 20)
+        // 4. DELETE /api/slots/{index} -> Delete slot
         if (is_numeric($action) && $subAction === '' && $method === 'DELETE') {
             $slotIndex = (int)$action;
 
@@ -1485,13 +1626,13 @@ switch ($resource) {
             ], 201);
         }
 
-        // 6. GET /api/slots/{index}/poll -> Concurrency Polling
+        // 6. GET /api/slots/{index}/poll -> Concurrency Polling with Heartbeat Lock Extension
         if (is_numeric($action) && $subAction === 'poll' && $method === 'GET') {
             $slotIndex = (int)$action;
             $clientVersion = (int)($_GET['version'] ?? 0);
 
             $stmt = $pdo->prepare("
-                SELECT s.version, s.active_editor_id, s.locked_until, s.updated_at, u.full_name as editor_name
+                SELECT s.id, s.version, s.active_editor_id, s.locked_until, s.updated_at, u.full_name as editor_name
                 FROM scenario_slots s
                 LEFT JOIN users u ON u.id = s.active_editor_id
                 WHERE s.user_id = :user_id AND s.slot_index = :slot_index
@@ -1501,7 +1642,24 @@ switch ($resource) {
             $slot = $stmt->fetch();
 
             if (!$slot) {
-                Database::sendJsonError('چینش مورد نظر یافت نشد.', 404);
+                Database::sendJsonResponse([
+                    'ok' => true,
+                    'exists' => false,
+                    'modified' => false,
+                    'version' => 0,
+                    'is_locked' => false,
+                    'locked_by' => null
+                ]);
+            }
+
+            // Extend lock heartbeat if current client is active editor
+            if ((int)$slot['active_editor_id'] === (int)$user['id']) {
+                $renewedLock = time() + 30;
+                $pdo->prepare("UPDATE scenario_slots SET locked_until = :exp WHERE id = :id")->execute([
+                    'exp' => $renewedLock,
+                    'id' => $slot['id']
+                ]);
+                $slot['locked_until'] = $renewedLock;
             }
 
             $serverVersion = (int)$slot['version'];
@@ -1510,6 +1668,7 @@ switch ($resource) {
             if ($serverVersion === $clientVersion) {
                 Database::sendJsonResponse([
                     'ok' => true,
+                    'exists' => true,
                     'modified' => false,
                     'version' => $serverVersion,
                     'is_locked' => $isLocked,
@@ -1517,21 +1676,42 @@ switch ($resource) {
                 ]);
             }
 
-            $fullStmt = $pdo->prepare("SELECT preferences_json, custom_ordering_json FROM scenario_slots WHERE user_id = :user_id AND slot_index = :slot_index");
-            $fullStmt->execute(['user_id' => $targetUserId, 'slot_index' => $slotIndex]);
+            $fullStmt = $pdo->prepare("SELECT title, stream, preferences_json, custom_ordering_json FROM scenario_slots WHERE id = :id");
+            $fullStmt->execute(['id' => $slot['id']]);
             $full = $fullStmt->fetch();
 
             $decodedPollPref = json_decode($full['preferences_json'], true);
 
             Database::sendJsonResponse([
                 'ok' => true,
+                'exists' => true,
                 'modified' => true,
                 'version' => $serverVersion,
                 'is_locked' => $isLocked,
                 'locked_by' => $isLocked ? $slot['editor_name'] : null,
+                'title' => $full['title'],
+                'stream' => $full['stream'],
                 'preferences' => !empty($decodedPollPref) ? $decodedPollPref : new stdClass(),
                 'custom_ordering' => json_decode($full['custom_ordering_json'], true) ?: []
             ]);
+        }
+
+        // 7. POST /api/slots/{index}/release-lock -> Explicit Lock Release on Unload
+        if (is_numeric($action) && $subAction === 'release-lock' && $method === 'POST') {
+            $slotIndex = (int)$action;
+
+            $stmt = $pdo->prepare("
+                UPDATE scenario_slots
+                SET active_editor_id = NULL, locked_until = 0
+                WHERE user_id = :user_id AND slot_index = :slot_index AND active_editor_id = :editor_id
+            ");
+            $stmt->execute([
+                'user_id' => $targetUserId,
+                'slot_index' => $slotIndex,
+                'editor_id' => $user['id']
+            ]);
+
+            Database::sendJsonResponse(['ok' => true, 'message' => 'قفل ویرایش آزاد شد.']);
         }
         break;
 
