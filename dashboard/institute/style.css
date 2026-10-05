@@ -60,7 +60,7 @@ body.dashboard-body {
 .dashboard-container {
     display: grid;
     grid-template-columns: 280px 1fr;
-    max-width: 1400px;
+    max-width: 1350px; /* TODO: Should be changed to 1224 */
     width: 100%;
     margin: 24px auto;
     padding: 0 20px;
@@ -258,6 +258,7 @@ body.dashboard-body {
 
 .tab-panel {
     display: none;
+    max-width: 880px; /* Exactly matches institute dashboard card length */
     width: 100%;
     animation: fadeIn 0.25s ease-out forwards;
 }
@@ -274,10 +275,14 @@ body.dashboard-body {
     box-sizing: border-box;
 }
 
+/* Unify all panels to the exact same 880px length */
+#studentInspectionView,
 #panelCoworkers,
 #panelInstitute,
 #panelMyAccount {
     max-width: 880px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .tab-panel.active {
@@ -964,7 +969,8 @@ body.dashboard-body {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    width: 100%; /* Matches hero card width perfectly */
+    max-width: 880px;
+    width: 100%;
     box-sizing: border-box;
 }
 

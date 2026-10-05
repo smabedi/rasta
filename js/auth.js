@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // ============================================================================
-// Coworker Invite Link Listener (?counselor_invite=CW-XXXX)
+// 🏛️ Coworker 24h Invite Auto-Modal Controller (?counselor_invite=CW-XXXX)
 // ============================================================================
 document.addEventListener('DOMContentLoaded', async () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -21,59 +21,235 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!inviteToken) return;
 
     try {
-        // 1. Verify token validity with backend
-        const res = await fetch(`/api/auth/invite-info?token=${encodeURIComponent(inviteToken)}`);
+        // 1. Verify token with backend
+        const res = await fetch(`/api/auth/coworker-invite?token=${encodeURIComponent(inviteToken)}`);
         const data = await res.json();
 
         if (!res.ok || !data.ok) {
-            alert(data.error || 'لینک دعوت نامعتبر یا منقضی شده است.');
+            alert(data.error || 'این لینک دعوت منقضی شده یا نامعتبر است.');
             return;
         }
 
-        // 2. Open the auth modal
-        // (Use the openAuthModal helper if auth.js already defines one, or show the modal directly)
-        const authModal = document.getElementById('authModal') || document.querySelector('.auth-modal-overlay');
-        if (authModal) {
-            authModal.style.display = 'flex';
-        }
+        // 2. Ensure modal markup exists (injects if not present in HTML)
+        ensureCoworkerModalDOM(data);
 
-        // 3. Switch modal from "Login" to "Register" tab
-        const registerTabBtn = document.getElementById('tabRegister') || document.querySelector('[data-tab="register"]');
-        if (registerTabBtn) {
-            registerTabBtn.click();
+        // 3. Open the modal
+        const backdrop = document.getElementById('coworkerModalBackdrop');
+        if (backdrop) {
+            backdrop.style.display = 'flex';
         }
-
-        // 4. Fill and lock the invite code input field
-        const inviteInput = document.getElementById('registerInviteCode') || document.querySelector('input[name="invite_code"]');
-        if (inviteInput) {
-            inviteInput.value = data.token;
-            inviteInput.readOnly = true;
-        }
-
-        // 5. Hide student-specific inputs (Konkur stream, gender/year)
-        const streamContainer = document.getElementById('registerStreamGroup') || document.querySelector('.stream-selection-row');
-        if (streamContainer) {
-            streamContainer.style.display = 'none';
-        }
-
-        // 6. Show an informational banner indicating the inviting institute
-        let noticeBanner = document.getElementById('inviteBannerNotice');
-        if (!noticeBanner && authModal) {
-            noticeBanner = document.createElement('div');
-            noticeBanner.id = 'inviteBannerNotice';
-            noticeBanner.style.cssText = 'background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; padding:10px 14px; border-radius:8px; margin-bottom:14px; font-size:0.84rem; text-align:center; font-weight:600;';
-            const modalBody = authModal.querySelector('.modal-card') || authModal;
-            modalBody.prepend(noticeBanner);
-        }
-        if (noticeBanner) {
-            noticeBanner.textContent = `دعوت به همکاری از طرف «${data.institute_name}»`;
-            noticeBanner.style.display = 'block';
-        }
-
     } catch (err) {
         console.error('Error verifying coworker invite token:', err);
     }
 });
+
+function ensureCoworkerModalDOM(inviteData) {
+    if (document.getElementById('coworkerModalBackdrop')) return;
+
+    const modalHtml = `
+    <div class="auth-modal-backdrop" id="coworkerModalBackdrop" style="display: none;">
+        <div class="auth-modal-card" role="dialog" aria-modal="true" aria-labelledby="coworkerTitle">
+            <!-- Modal Header -->
+            <div class="auth-card-header">
+                <div>
+                    <h3 class="auth-title" id="coworkerTitle">عضویت در کادر مشاوره</h3>
+                    <p class="auth-subtitle">دعوت‌نامه رسمی همکاری در مرکز آموزشی</p>
+                </div>
+                <button class="auth-close-btn" id="btnCloseCoworkerModal" type="button" aria-label="بستن">&times;</button>
+            </div>
+
+            <!-- Inviting Institute Banner -->
+            <div style="padding: 1rem 1.5rem 0.25rem;">
+                <div style="background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; padding:10px 14px; border-radius:8px; font-size:0.84rem; text-align:center; font-weight:600;">
+                    دعوت به همکاری از طرف مرکز: <strong>${escapeHtml(inviteData.institute_name)}</strong>
+                </div>
+            </div>
+
+            <div class="auth-alert-box" id="coworkerAlert" style="display: none;"></div>
+
+            <!-- Coworker Registration Form -->
+            <form class="auth-pane active" id="formCoworkerRegister" style="padding-top: 0.75rem;">
+                <input type="hidden" id="coworkerInviteToken" value="${escapeHtml(inviteData.token)}">
+
+                <!-- Full Name -->
+                <div class="form-group">
+                    <label class="form-label" for="coworkerFullName">نام و نام خانوادگی مشاور</label>
+                    <input type="text" id="coworkerFullName" class="form-control" placeholder="مثال: دکتر سارا محمدی" required>
+                </div>
+
+                <!-- Phone + OTP Trigger Row -->
+                <div class="form-group">
+                    <label class="form-label" for="coworkerPhone">شماره تلفن همراه مشاور</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="tel" id="coworkerPhone" class="form-control" placeholder="۰۹۱۲۳۴۵۶۷۸۹" required maxlength="11" dir="ltr" style="flex: 1;" value="${escapeHtml(inviteData.preset_phone || '')}">
+                        <button type="button" class="btn btn-secondary btn-otp-action" id="btnRequestCoworkerOtp">
+                            دریافت کد تایید
+                        </button>
+                    </div>
+                </div>
+
+                <!-- OTP Code (revealed on request) + Account Password -->
+                <div class="form-row">
+                    <div class="form-group col-6" id="coworkerOtpGroup" style="display: none;">
+                        <label class="form-label" for="coworkerOtpCode">کد ۵ رقمی تایید</label>
+                        <input type="text" id="coworkerOtpCode" class="form-control" placeholder="کد تایید" maxlength="5" dir="ltr">
+                    </div>
+                    <div class="form-group col-6" style="flex: 1;">
+                        <label class="form-label" for="coworkerPassword">کلمه عبور حساب</label>
+                        <input type="password" id="coworkerPassword" class="form-control" placeholder="حداقل ۸ نویسه" minlength="8" dir="ltr" required>
+                    </div>
+                </div>
+
+                <!-- Submit Action -->
+                <div style="margin-top: 1rem;">
+                    <button type="submit" class="btn btn-primary btn-block" id="btnSubmitCoworker" style="height: 44px;">
+                        تکمیل عضویت و ورود به آموزشگاه
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    // Setup Close Listeners
+    const backdrop = document.getElementById('coworkerModalBackdrop');
+    const closeBtn = document.getElementById('btnCloseCoworkerModal');
+    closeBtn.addEventListener('click', () => { backdrop.style.display = 'none'; });
+    backdrop.addEventListener('click', (e) => { if (e.target === backdrop) backdrop.style.display = 'none'; });
+
+    // Setup OTP Request Listener
+    let coworkerOtpTimer = null;
+    const btnOtp = document.getElementById('btnRequestCoworkerOtp');
+    btnOtp.addEventListener('click', async () => {
+        const phone = normalizeDigits(document.getElementById('coworkerPhone').value);
+        if (!/^09\d{9}$/.test(phone)) {
+            showCoworkerAlert('لطفاً ابتدا شماره تلفن معتبر ۱۱ رقمی وارد نمایید.');
+            return;
+        }
+
+        btnOtp.disabled = true;
+        btnOtp.textContent = 'در حال ارسال...';
+
+        try {
+            const res = await fetch('/api/auth/otp-request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone, type: 'register_otp' })
+            });
+            const data = await res.json();
+
+            if (data.ok) {
+                showCoworkerAlert('کد تایید پیامک شد.', false);
+                document.getElementById('coworkerOtpGroup').style.display = 'block';
+                document.getElementById('coworkerPhone').readOnly = true;
+
+                if (data.dev_sms) logSimulatedSms(data.dev_sms);
+                if (data.dev_code) document.getElementById('coworkerOtpCode').value = data.dev_code;
+
+                let remaining = 120;
+                clearInterval(coworkerOtpTimer);
+
+                const updateTimerLabel = () => {
+                    const m = Math.floor(remaining / 60);
+                    const s = remaining % 60;
+                    btnOtp.textContent = `ارسال مجدد (${toPersianDigits(m)}:${toPersianDigits(s < 10 ? '0' + s : s)})`;
+                };
+
+                updateTimerLabel();
+                coworkerOtpTimer = setInterval(() => {
+                    remaining--;
+                    if (remaining <= 0) {
+                        clearInterval(coworkerOtpTimer);
+                        btnOtp.textContent = 'ارسال مجدد کد';
+                        btnOtp.disabled = false;
+                        document.getElementById('coworkerPhone').readOnly = false;
+                    } else {
+                        updateTimerLabel();
+                    }
+                }, 1000);
+            } else {
+                showCoworkerAlert(data.error || 'خطا در ارسال پیامک.');
+                btnOtp.disabled = false;
+                btnOtp.textContent = 'دریافت کد تایید';
+            }
+        } catch {
+            showCoworkerAlert('ارتباط با سرور برقرار نشد.');
+            btnOtp.disabled = false;
+            btnOtp.textContent = 'دریافت کد تایید';
+        }
+    });
+
+    // Setup Form Submit Listener
+    const form = document.getElementById('formCoworkerRegister');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearCoworkerAlert();
+
+        const payload = {
+            token: document.getElementById('coworkerInviteToken').value.trim(),
+            full_name: document.getElementById('coworkerFullName').value.trim(),
+            phone: normalizeDigits(document.getElementById('coworkerPhone').value),
+            code: normalizeDigits(document.getElementById('coworkerOtpCode').value),
+            password: document.getElementById('coworkerPassword').value.trim()
+        };
+
+        if (!payload.code) {
+            showCoworkerAlert('لطفاً ابتدا کد تایید پیامکی را دریافت و وارد نمایید.');
+            return;
+        }
+        if (payload.password.length < 8) {
+            showCoworkerAlert('رمز عبور مشاور باید حداقل ۸ نویسه باشد.');
+            return;
+        }
+
+        const submitBtn = document.getElementById('btnSubmitCoworker');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'در حال ثبت عضویت...';
+
+        try {
+            const res = await fetch('/api/auth/register-coworker', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+
+            if (data.ok && data.token) {
+                localStorage.setItem('rasta_token', data.token);
+                // Clear URL query parameter
+                window.history.replaceState(null, '', window.location.pathname);
+                window.location.href = data.redirect || '/dashboard/institute/';
+            } else {
+                showCoworkerAlert(data.error || 'ثبت‌نام با خطا مواجه شد.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'تکمیل عضویت و ورود به آموزشگاه';
+            }
+        } catch {
+            showCoworkerAlert('ارتباط با سرور برقرار نشد.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'تکمیل عضویت و ورود به آموزشگاه';
+        }
+    });
+}
+
+function showCoworkerAlert(msg, isError = true) {
+    const box = document.getElementById('coworkerAlert');
+    if (!box) return;
+    box.textContent = msg;
+    box.style.display = 'block';
+    box.style.backgroundColor = isError ? '#fef2f2' : '#f0fdf4';
+    box.style.color = isError ? '#b91c1c' : '#15803d';
+    box.style.borderColor = isError ? '#fecaca' : '#bbf7d0';
+}
+
+function clearCoworkerAlert() {
+    const box = document.getElementById('coworkerAlert');
+    if (!box) return;
+    box.style.display = 'none';
+    box.textContent = '';
+}
 
 function normalizeDigits(val) {
     if (!val) return '';
