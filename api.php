@@ -858,7 +858,15 @@ switch ($resource) {
         // SMS OTP Request (Used for Login & Registration)
         if ($action === 'otp-request' && $method === 'POST') {
             $phone = normalizeDigits(trim($body['phone'] ?? ''));
-            $type = trim($body['type'] ?? 'otp'); // 'otp' or 'register_otp'
+            $type = trim($body['type'] ?? 'otp'); // 'otp', 'register_otp', or 'password_reset'
+
+            // Block public OTP login and public password reset
+            if ($type === 'otp') {
+                Database::sendJsonError('ورود با کد یک‌بارمصرف پیامکی در حال حاضر غیرفعال است. لطفاً از طریق رمز عبور وارد شوید.', 403);
+            }
+            if ($type === 'password_reset') {
+                Database::sendJsonError('بازیابی کلمه عبور با پیامک در حال حاضر غیرفعال است.', 403);
+            }
 
             if (!preg_match('/^09[0-9]{9}$/', $phone)) {
                 Database::sendJsonError('شماره تلفن همراه نامعتبر است.');
@@ -905,7 +913,7 @@ switch ($resource) {
             ]);
         }
 
-        // SMS OTP Verify & Login
+        /*// SMS OTP Verify & Login
         if ($action === 'otp-verify' && $method === 'POST') {
             $phone = normalizeDigits(trim($body['phone'] ?? ''));
             $code = normalizeDigits(trim($body['code'] ?? ''));
@@ -948,9 +956,14 @@ switch ($resource) {
             } else {
                 Database::sendJsonError('حساب کاربری با این شماره یافت نشد. لطفاً ابتدا ثبت‌نام کنید.', 404);
             }
+        }*/
+
+        // SMS OTP Verify & Login (Temporarily deactivated for security)
+        if ($action === 'otp-verify' && $method === 'POST') {
+            Database::sendJsonError('ورود با کد یک‌بارمصرف پیامکی در حال حاضر غیرفعال است. لطفاً از طریق رمز عبور وارد شوید.', 403);
         }
 
-        // Password Reset via OTP
+        /*// Password Reset via OTP
         if ($action === 'reset-password' && $method === 'POST') {
             $phone = normalizeDigits(trim($body['phone'] ?? ''));
             $code = normalizeDigits(trim($body['code'] ?? ''));
@@ -998,6 +1011,11 @@ switch ($resource) {
                 'redirect' => $redirectUrl,
                 'message' => 'کلمه عبور با موفقیت تغییر یافت.'
             ]);
+        }*/
+
+        // Password Reset via OTP (Deactivated for unauthenticated visitors)
+        if ($action === 'reset-password' && $method === 'POST') {
+            Database::sendJsonError('بازیابی کلمه عبور با پیامک در حال حاضر غیرفعال است.', 403);
         }
 
         // GET /api/auth/invite-info?token=CW-XXXX
