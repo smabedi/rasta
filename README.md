@@ -16,7 +16,7 @@
 
 <p>
   <b>"Choose your major, now smarter."</b><br/>
-  A decision-support system designed to curate valid university-major combinations and generate an optimal 150-choice preference list for Iranian National University Entrance Exam (Konkur) candidates.
+  A decision-support system designed to curate valid university-major combinations and generate an optimal 300-choice preference list for Iranian National University Entrance Exam (Konkur) candidates.
 </p>
 
 </div>
@@ -25,14 +25,14 @@
 
 ## 📌 Problem Statement
 
-In the Iranian National University Entrance Examination (Konkur), graduates must assemble a ranked preference list containing up to **150 academic choices**. Candidates invariably evaluate choices across two orthogonal dimensions:
+In the Iranian National University Entrance Examination (Konkur), graduates must assemble a ranked preference list containing up to **300 academic choices**. Candidates invariably evaluate choices across two orthogonal dimensions:
 1. **Institution & Geography:** Academic reputation, research ranking, faculty prestige, living costs, and geographical distance.
 2. **Field of Study (Major):** Career prospects, curriculum relevance, and personal aptitude.
 
 Traditional counseling methods and manual sorting introduce three systemic points of failure:
 * **Non-Existent Combinations:** Candidates routinely include invalid pairs that are not offered in official catalogs (e.g., *Psychology at Sharif University of Technology*).
 * **Compensatory Scoring Bias:** Additive linear averages allow a high institutional score to compensate for an undesirable major, unintentionally placing candidates into disciplines they dislike.
-* **Clerical Errors:** Manual rearrangement of 150 items on paper or spreadsheets results in misplaced priority codes and permanent misallocation.
+* **Clerical Errors:** Manual rearrangement of 300 items on paper or spreadsheets results in misplaced priority codes and permanent misallocation.
 
 ---
 

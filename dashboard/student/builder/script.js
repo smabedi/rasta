@@ -5,7 +5,7 @@
  * - Step 2: Provinces (/data/{stream}/provinces.json)
  * - Step 3: Universities (/data/{stream}/universities.json)
  * - Step 4: Majors (/data/{stream}/majors.json)
- * - Step 5: 150-Choice Matrix Engine (/data/{stream}/pairs.json & Cobb-Douglas MCDM)
+ * - Step 5: 300-Choice Matrix Engine (/data/{stream}/pairs.json & Cobb-Douglas MCDM)
  * - Backend: REST Persistence, LocalStorage Caching & Optimistic Concurrency Polling
  */
 
@@ -1152,7 +1152,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         viable.sort((a, b) => b._utility - a._utility || b._r_major - a._r_major || b._r_uni - a._r_uni);
-        return viable.slice(0, 150).map(({ _utility, _r_major, _r_uni, ...item }) => item);
+        return viable.slice(0, 300).map(({ _utility, _r_major, _r_uni, ...item }) => item);
     }
 
     function initStep5MatrixModule() {
@@ -1426,7 +1426,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     chip.classList.add('copied');
-                    chip.textContent = 'کپی شد ✓';
+                    chip.textContent = 'کپی شد';
 
                     setTimeout(() => {
                         chip.classList.remove('copied');
@@ -1689,7 +1689,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let selectedPairForInsertion = null;
 
         function setModalTargetRank(rank) {
-            const maxAllowed = Math.min(150, currentMatrixItems.length + 1);
+            const maxAllowed = Math.min(300, currentMatrixItems.length + 1);
             currentModalTargetRank = Math.max(1, Math.min(maxAllowed, rank));
 
             if (addChoiceTargetRankInput) {
@@ -1713,7 +1713,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (addChoiceLimitWarning) {
-                addChoiceLimitWarning.style.display = (currentMatrixItems.length >= 150) ? 'flex' : 'none';
+                addChoiceLimitWarning.style.display = (currentMatrixItems.length >= 300) ? 'flex' : 'none';
             }
 
             if (addChoiceSearchInput) addChoiceSearchInput.value = '';
@@ -1889,12 +1889,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            const maxAllowed = Math.min(150, currentMatrixItems.length + 1);
+            const maxAllowed = Math.min(300, currentMatrixItems.length + 1);
             targetRank = Math.max(1, Math.min(maxAllowed, targetRank));
             const insertIdx = targetRank - 1;
 
             let poppedNotice = false;
-            if (currentMatrixItems.length >= 150) {
+            if (currentMatrixItems.length >= 300) {
                 currentMatrixItems.pop();
                 poppedNotice = true;
             }
@@ -1919,7 +1919,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             if (poppedNotice) {
-                showToast(`«${newItem.major} - ${newItem.uni}» در رتبه ${toFa(targetRank)} درج شد (رشته‌محل رتبه ۱۵۰ خارج گردید).`);
+                showToast(`«${newItem.major} - ${newItem.uni}» در رتبه ${toFa(targetRank)} درج شد (رشته‌محل رتبه ۳۰۰ خارج گردید).`);
             } else {
                 showToast(`«${newItem.major} - ${newItem.uni}» با موفقیت در رتبه ${toFa(targetRank)} درج شد.`);
             }
@@ -1954,7 +1954,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const rawEn = toEn(e.target.value).replace(/\D/g, '');
                 if (!rawEn) return;
                 const parsed = parseInt(rawEn, 10);
-                const maxAllowed = Math.min(150, currentMatrixItems.length + 1);
+                const maxAllowed = Math.min(300, currentMatrixItems.length + 1);
                 currentModalTargetRank = Math.max(1, Math.min(maxAllowed, parsed));
                 if (btnConfirmInsertText) {
                     btnConfirmInsertText.textContent = `درج در رتبه ${toFa(currentModalTargetRank)}`;
@@ -2954,7 +2954,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     'استان و شهرها',
                     'رتبه‌بندی دانشگاه‌ها',
                     'رغبت‌سنجی رشته‌ها',
-                    'جدول ۱۵۰ انتخاب'
+                    'جدول ۳۰۰ انتخاب'
                 ];
                 btnNextStep.innerHTML = `<span>گام بعدی: ${nextStepTitles[current - 1] || ''}</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>`;
             }
@@ -3039,7 +3039,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const stepNames = ['', 'استان‌ها', 'رتبه‌بندی دانشگاه‌ها', 'رغبت‌سنجی رشته‌ها', 'جدول ۱۵۰ انتخاب'];
+            const stepNames = ['', 'استان‌ها', 'رتبه‌بندی دانشگاه‌ها', 'رغبت‌سنجی رشته‌ها', 'جدول ۳۰۰ انتخاب'];
             const next = wizardState.currentStep + 1;
             await switchStep(next);
             showToast(`به مرحله ${stepNames[next - 1]} خوش آمدید.`);
