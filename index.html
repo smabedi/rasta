@@ -147,6 +147,18 @@
             }, 250);
         }, 2000);
     });
+
+    document.querySelectorAll('input[name="login_method"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const isOtp = e.target.value === 'otp';
+            const submitBtn = document.getElementById('btnLoginSubmit');
+            if (submitBtn) {
+                submitBtn.disabled = isOtp;
+                submitBtn.style.opacity = isOtp ? '0.5' : '1';
+                submitBtn.style.cursor = isOtp ? 'not-allowed' : 'pointer';
+            }
+        });
+    });
 </script>
 
 <div class="auth-modal-backdrop" id="authModalBackdrop" style="display: none;">
@@ -199,10 +211,13 @@
 
             <!-- OTP Field Container (Hidden initially) -->
             <div class="form-group" id="loginOtpGroup" style="display: none;">
+                <div class="auth-alert-box" style="margin: 0 0 0.85rem 0; display: block;">
+                    ورود با کد یک‌بارمصرف پیامکی در حال حاضر غیرفعال است. لطفاً از طریق رمز عبور وارد شوید.
+                </div>
                 <label class="form-label" for="loginOtpCode">کد ۵ رقمی تایید</label>
                 <div style="display: flex; gap: 8px;">
-                    <input type="text" id="loginOtpCode" class="form-control" placeholder="۱۲۳۴۵" maxlength="5" dir="ltr" style="flex: 1; text-align: center;">
-                    <button type="button" class="btn btn-secondary btn-otp-action" id="btnRequestOtp">
+                    <input type="text" id="loginOtpCode" class="form-control" placeholder="۱۲۳۴۵" maxlength="5" dir="ltr" style="flex: 1; text-align: center;" disabled>
+                    <button type="button" class="btn btn-secondary btn-otp-action" id="btnRequestOtp" disabled style="opacity: 0.5; cursor: not-allowed;">
                         دریافت کد تایید
                     </button>
                 </div>
@@ -367,11 +382,15 @@
 
         <!-- TAB 4: PASSWORD RESET PANE -->
         <form class="auth-pane" id="formAuthResetPassword">
+            <div class="auth-alert-box" style="margin: 0 0 0.85rem 0; display: block;">
+                بازیابی کلمه عبور با پیامک در حال حاضر غیرفعال است. در صورت فراموشی، با پشتیبانی تماس بگیرید.
+            </div>
+
             <div class="form-group">
                 <label class="form-label" for="resetPhone">شماره همراه حساب</label>
                 <div style="display: flex; gap: 8px;">
-                    <input type="tel" id="resetPhone" class="form-control" placeholder="09123456789" required maxlength="11" dir="ltr" style="flex: 1;">
-                    <button type="button" class="btn btn-secondary btn-otp-action" id="btnRequestResetOtp">
+                    <input type="tel" id="resetPhone" class="form-control" placeholder="09123456789" required maxlength="11" dir="ltr" style="flex: 1;" disabled>
+                    <button type="button" class="btn btn-secondary btn-otp-action" id="btnRequestResetOtp" disabled style="opacity: 0.5; cursor: not-allowed;">
                         دریافت کد تایید
                     </button>
                 </div>
@@ -380,15 +399,15 @@
             <div class="form-row">
                 <div class="form-group col-6" id="resetOtpGroup" style="display: none;">
                     <label class="form-label" for="resetOtpCode">کد ۵ رقمی</label>
-                    <input type="text" id="resetOtpCode" class="form-control" placeholder="۱۲۳۴۵" maxlength="5" dir="ltr">
+                    <input type="text" id="resetOtpCode" class="form-control" placeholder="۱۲۳۴۵" maxlength="5" dir="ltr" disabled>
                 </div>
                 <div class="form-group col-6" style="flex: 1;">
                     <label class="form-label" for="resetNewPassword">کلمه عبور جدید</label>
-                    <input type="password" id="resetNewPassword" class="form-control" placeholder="حداقل ۶ نویسه" dir="ltr" required>
+                    <input type="password" id="resetNewPassword" class="form-control" placeholder="حداقل ۶ نویسه" dir="ltr" required disabled>
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-block" style="height: 44px; margin-top: 0.5rem;">
+            <button type="submit" class="btn btn-primary btn-block" style="height: 44px; margin-top: 0.5rem; opacity: 0.5; cursor: not-allowed;" disabled>
                 تغییر رمز عبور و ورود
             </button>
             <button type="button" class="btn btn-outline btn-block" id="btnCancelResetPwd" style="height: 40px; margin-top: 0.5rem;">
