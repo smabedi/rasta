@@ -557,7 +557,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 try {
                     await navigator.clipboard.writeText(c);
                     chip.classList.add('copied');
-                    chip.textContent = 'کپی شد ✓';
+                    chip.textContent = 'کپی شد';
                     setTimeout(() => {
                         chip.classList.remove('copied');
                         chip.textContent = toFa(c);
