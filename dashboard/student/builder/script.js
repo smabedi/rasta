@@ -86,6 +86,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const cacheKey = `rasta_wizard_draft_slot_${wizardState.slotIndex}${targetStudentId ? '_' + targetStudentId : ''}`;
 
+    // Clean stale cache immediately if creating a brand-new slot
+    if (isNew) {
+        try { localStorage.removeItem(cacheKey); } catch (e) {}
+    }
+
+    let candidateProfile = null;
+
     // --- 3. Async Fetch for JSON Catalogs (Stream-Specific) ---
     async function fetchJsonStrict(url, label) {
         let res = await fetch(url).catch(() => null);
@@ -455,8 +462,10 @@ document.addEventListener('DOMContentLoaded', () => {
             ternaryPuck.setAttribute('cy', py.toString());
         }
 
-        markMatrixDirty();
-        triggerAutoSync();
+        if (source) {
+            markMatrixDirty();
+            triggerAutoSync();
+        }
     }
 
     function initTriWeightsModule() {
@@ -3212,11 +3221,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (titleEl) titleEl.textContent = wizardState.slotTitle;
 
         const pref = slot.preferences || {};
-        const incomingStream = pref.stream || slot.stream || wizardState.stream;
+        const incomingStream = pref.stream || slot.stream || candidateProfile?.stream || wizardState.stream || 'math';
         const streamChanged = incomingStream !== wizardState.stream;
 
         wizardState.stream = incomingStream;
-        if (pref.gender) wizardState.gender = pref.gender;
+        wizardState.gender = pref.gender || candidateProfile?.gender || 'male';
         if (pref.lambda_term !== undefined) wizardState.lambda_term = parseFloat(pref.lambda_term);
         if (pref.lambda_records) wizardState.lambda_records = pref.lambda_records;
         if (pref.weights) wizardState.weights = pref.weights;
@@ -3416,22 +3425,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 11. Initial Boot Sequence ---
     async function bootWizard() {
-        initHeaderAndProfile();
-        initTriWeightsModule();
-
-        // 1. Fetch Server Slot & Candidate Context
+        // 1. Fetch Server Slot & Candidate Profile FIRST before touching DOM
         const query = targetStudentId ? `?student_id=${targetStudentId}` : '';
         const serverData = await apiFetch(`slots/${wizardState.slotIndex}${query}`);
 
-        let hasLoadedSlot = false;
-        let studentMeta = serverData?.student || null;
-
-        if (!studentMeta && !targetStudentId) {
+        candidateProfile = serverData?.student || null;
+        if (!candidateProfile && !targetStudentId) {
             const meData = await apiFetch('auth/me');
             if (meData && meData.user) {
-                studentMeta = meData.user;
+                candidateProfile = meData.user;
             }
         }
+
+        let hasLoadedSlot = false;
 
         if (serverData && serverData.exists && serverData.slot) {
             wizardState.slotExistsOnServer = true;
@@ -3452,20 +3458,23 @@ document.addEventListener('DOMContentLoaded', () => {
             wizardState.slotExistsOnServer = false;
         }
 
-        // 2. Fallback to Local Cache or Student Profile Defaults for New Scenarios
+        // 2. For new or unpersisted slots, enforce user account settings
         if (!hasLoadedSlot) {
-            const hasCachedDraft = loadFromLocalCache();
+            const hasCachedDraft = isNew ? false : loadFromLocalCache();
 
-            if (!hasCachedDraft && studentMeta) {
-                if (studentMeta.stream) wizardState.stream = studentMeta.stream;
-                if (studentMeta.gender) wizardState.gender = studentMeta.gender;
+            if (candidateProfile) {
+                // Profile ALWAYS dictates candidate identity (gender & stream) on new slots
+                if (candidateProfile.gender) wizardState.gender = candidateProfile.gender;
+                if (candidateProfile.stream && (!hasCachedDraft || !wizardState.stream)) {
+                    wizardState.stream = candidateProfile.stream;
+                }
             }
 
-            const streamRadio = document.querySelector(`input[name="paramStream"][value="${wizardState.stream}"]`);
-            if (streamRadio) streamRadio.checked = true;
+            if (!wizardState.gender) wizardState.gender = 'male';
+            if (!wizardState.stream) wizardState.stream = 'math';
 
-            const genderRadio = document.querySelector(`input[name="paramGender"][value="${wizardState.gender}"]`);
-            if (genderRadio) genderRadio.checked = true;
+            initHeaderAndProfile();
+            initTriWeightsModule();
 
             await Promise.all([
                 loadRegimesData(wizardState.stream),
@@ -3486,6 +3495,9 @@ document.addEventListener('DOMContentLoaded', () => {
             provincesArena.render();
             universitiesArena.render();
             majorsArena.render();
+        } else {
+            initHeaderAndProfile();
+            initTriWeightsModule();
         }
 
         // 3. Step parameter routing (&step=5) or fallback to Step 1
