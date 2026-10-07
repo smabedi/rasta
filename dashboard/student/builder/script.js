@@ -1117,7 +1117,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 lambdaRecords = 1.0;
             }
 
-            const isBahman = (pair.capacityTerm_2 > 0 && (!pair.capacityTerm_1 || pair.capacityTerm_1 === 0));
+            const isBahman = (pair.capacityTerm2 > 0 && (!pair.capacityTerm1 || pair.capacityTerm1 === 0));
             let lambdaTerm = 1.0;
 
             if (isBahman) {
@@ -1140,8 +1140,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 regime: pair.courseType,
                 isBahman: isBahman,
                 byExam: isByExam,
-                capacityTerm_1: pair.capacityTerm_1 ?? 0,
-                capacityTerm_2: pair.capacityTerm_2 ?? 0,
+                capacityTerm1: pair.capacityTerm1 ?? 0,
+                capacityTerm2: pair.capacityTerm2 ?? 0,
                 genderMen: Boolean(pair.genderMen),
                 genderWomen: Boolean(pair.genderWomen),
                 notes: pair.notes || '',
@@ -1206,7 +1206,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     currentMatrixItems = wizardState.customOrdering.map((item, idx) => {
                         const match = pairsMap.get(String(item.code));
                         if (!match) return { ...item, rank: idx + 1 };
-                        const isBahman = (match.capacityTerm_2 > 0 && (!match.capacityTerm_1 || match.capacityTerm_1 === 0));
+                        const isBahman = (match.capacityTerm2 > 0 && (!match.capacityTerm1 || match.capacityTerm1 === 0));
                         return {
                             rank: idx + 1,
                             code: String(match.code),
@@ -1332,7 +1332,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 let regimeClass = 'regime-day';
                 if (item.regime.includes('دوم') || item.regime.includes('شبانه')) regimeClass = 'regime-night';
-                if (item.regime.includes('پردیس') || item.regime.includes('خودگردان')) regimeClass = 'regime-campus';
+                else if (item.regime.includes('پردیس') || item.regime.includes('خودگردان')) regimeClass = 'regime-campus';
+                else if (item.regime.includes('مجازی') || item.regime.includes('الکترونیکی')) regimeClass = 'regime-virtual';
 
                 const provWithDesc = item.uniDesc ? `${item.province} • ${item.uniDesc}` : item.province;
 
@@ -1805,12 +1806,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             displaySlice.forEach(pair => {
                 const existingRank = existingCodesMap.get(String(pair.code));
-                const isBahman = (pair.capacityTerm_2 > 0 && (!pair.capacityTerm_1 || pair.capacityTerm_1 === 0));
+                const isBahman = (pair.capacityTerm2 > 0 && (!pair.capacityTerm1 || pair.capacityTerm1 === 0));
                 const isCurrentlySelected = selectedPairForInsertion && String(selectedPairForInsertion.code) === String(pair.code);
 
                 let regimeClass = 'regime-day';
                 if (pair.courseType && (pair.courseType.includes('دوم') || pair.courseType.includes('شبانه'))) regimeClass = 'regime-night';
-                if (pair.courseType && (pair.courseType.includes('پردیس') || pair.courseType.includes('خودگردان'))) regimeClass = 'regime-campus';
+                else if (pair.courseType && (pair.courseType.includes('پردیس') || pair.courseType.includes('خودگردان'))) regimeClass = 'regime-campus';
+                else if (pair.courseType && (pair.courseType.includes('مجازی') || pair.courseType.includes('الکترونیکی'))) regimeClass = 'regime-virtual';
 
                 const row = document.createElement('div');
                 row.className = `add-choice-row ${existingRank ? 'is-disabled' : ''} ${isCurrentlySelected ? 'is-selected' : ''}`;
@@ -1862,7 +1864,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const pair = pairsMasterCatalog.find(p => String(p.code) === String(code));
             if (!pair) return;
 
-            const isBahman = (pair.capacityTerm_2 > 0 && (!pair.capacityTerm_1 || pair.capacityTerm_1 === 0));
+            const isBahman = (pair.capacityTerm2 > 0 && (!pair.capacityTerm1 || pair.capacityTerm1 === 0));
             const newItem = {
                 code: String(pair.code),
                 major: pair.major,
@@ -1872,8 +1874,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 regime: pair.courseType,
                 isBahman: isBahman,
                 byExam: pair.byExam !== false,
-                capacityTerm_1: pair.capacityTerm_1 ?? 0,
-                capacityTerm_2: pair.capacityTerm_2 ?? 0,
+                capacityTerm1: pair.capacityTerm1 ?? 0,
+                capacityTerm2: pair.capacityTerm2 ?? 0,
                 genderMen: Boolean(pair.genderMen),
                 genderWomen: Boolean(pair.genderWomen),
                 notes: pair.notes || ''
@@ -2157,7 +2159,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let popoverHideTimeout = null;
 
         function getCatalogPairByCode(code) {
-            // Master catalog contains canonical properties (university, campus, province, capacityTerm_1, etc.)
+            // Master catalog contains canonical properties (university, campus, province, capacityTerm1, etc.)
             const cat = pairsMasterCatalog.find(p => String(p.code) === String(code));
             if (cat) return cat;
             return currentMatrixItems.find(p => String(p.code) === String(code)) || null;
@@ -2181,10 +2183,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const majorTitle = pair.major || '';
             const uniTitle = pair.university || pair.uni || '';
             const provTitle = pair.province || '';
-            const campusTitle = pair.campus || pair.uniDesc || '';
+            const campus = typeof pair.campus === 'string' ? pair.campus.trim() : '';
 
-            const c1 = Number(pair.capacityTerm_1) || 0;
-            const c2 = Number(pair.capacityTerm_2) || 0;
+            const c1 = Number(pair.capacityTerm1) || 0;
+            const c2 = Number(pair.capacityTerm2) || 0;
 
             // Determine single non-zero capacity and month
             let termMonth = 'مهرماه';
@@ -2213,15 +2215,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="popover-code-pill">${toFa(pair.code)}</span>
                 </div>
 
-                <!-- Consolidated Metadata Card (Location & Single Capacity) -->
+                <!-- Consolidated Metadata Card (Location, Campus & Single Capacity) -->
                 <div class="popover-meta-box">
                     <div class="popover-meta-row">
                         <svg class="popover-meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                             <circle cx="12" cy="10" r="3"></circle>
                         </svg>
-                        <span class="popover-meta-text">استان: <strong>${provTitle}</strong>${campusTitle ? ` • پردیس/محل: <strong>${campusTitle}</strong>` : ''}</span>
+                        <span class="popover-meta-text">استان: <strong>${provTitle}</strong></span>
                     </div>
+                    ${campus ? `
+                    <div class="popover-meta-divider"></div>
+                    <div class="popover-meta-row">
+                        <svg class="popover-meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 21h18"></path>
+                            <path d="M5 21V7l8-4v18"></path>
+                            <path d="M19 21V11l-6-3"></path>
+                        </svg>
+                        <span class="popover-meta-text">مکان: <strong>${campus}</strong></span>
+                    </div>
+                    ` : ''}
                     <div class="popover-meta-divider"></div>
                     <div class="popover-meta-row">
                         <svg class="popover-meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2240,7 +2253,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <line x1="12" y1="8" x2="12" y2="12"></line>
                                 <line x1="12" y1="16" x2="12.01" y2="16"></line>
                             </svg>
-                            شرایط و توضیحات اختصاصی دفترچه:
+                            توضیحات اختصاصی دفترچه:
                         </span>
                         <p class="popover-notes-content">${notesText}</p>
                     </div>
@@ -2440,8 +2453,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 row.height = 22;
 
                 const pairDetail = getCatalogPairByCode(item.code) || item;
-                const c1 = Number(pairDetail.capacityTerm_1) || 0;
-                const c2 = Number(pairDetail.capacityTerm_2) || 0;
+                const c1 = Number(pairDetail.capacityTerm1) || 0;
+                const c2 = Number(pairDetail.capacityTerm2) || 0;
 
                 let capText = '-';
                 if (c1 > 0 && c2 === 0) capText = `${c1} نفر (مهر)`;
@@ -2557,8 +2570,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const rowsHtml = currentMatrixItems.map((item, index) => {
                 const pairDetail = getCatalogPairByCode(item.code) || item;
-                const c1 = Number(pairDetail.capacityTerm_1) || 0;
-                const c2 = Number(pairDetail.capacityTerm_2) || 0;
+                const c1 = Number(pairDetail.capacityTerm1) || 0;
+                const c2 = Number(pairDetail.capacityTerm2) || 0;
 
                 let capText = '-';
                 if (c1 > 0 && c2 === 0) capText = `${toFa(c1)}`;
@@ -2567,7 +2580,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 let regimeClass = 'regime-day';
                 if (item.regime.includes('دوم') || item.regime.includes('شبانه')) regimeClass = 'regime-night';
-                if (item.regime.includes('پردیس') || item.regime.includes('خودگردان')) regimeClass = 'regime-campus';
+                else if (item.regime.includes('پردیس') || item.regime.includes('خودگردان')) regimeClass = 'regime-campus';
+                else if (item.regime.includes('مجازی') || item.regime.includes('الکترونیکی')) regimeClass = 'regime-virtual';
 
                 const notesText = (item.notes || pairDetail.notes || '').trim();
 
@@ -2777,6 +2791,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         .regime-day { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
                         .regime-night { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
                         .regime-campus { background: #faf5ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+                        .regime-virtual { background: #ecfeff; color: #0e7490; border: 1px solid #a5f3fc; }
 
                         .term-mehr { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
                         .term-bahman { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
@@ -3299,7 +3314,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     return { ...item, rank: idx + 1 };
                 }
 
-                const isBahman = (match.capacityTerm_2 > 0 && (!match.capacityTerm_1 || match.capacityTerm_1 === 0));
+                const isBahman = (match.capacityTerm2 > 0 && (!match.capacityTerm1 || match.capacityTerm1 === 0));
 
                 return {
                     rank: idx + 1,
@@ -3311,8 +3326,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     regime: match.courseType,
                     isBahman: isBahman,
                     byExam: match.byExam !== false,
-                    capacityTerm_1: match.capacityTerm_1 ?? 0,
-                    capacityTerm_2: match.capacityTerm_2 ?? 0,
+                    capacityTerm1: match.capacityTerm1 ?? 0,
+                    capacityTerm2: match.capacityTerm2 ?? 0,
                     genderMen: Boolean(match.genderMen),
                     genderWomen: Boolean(match.genderWomen),
                     notes: match.notes || ''
