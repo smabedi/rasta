@@ -1341,8 +1341,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 let regimeClass = 'regime-day';
                 if (item.regime.includes('دوم') || item.regime.includes('شبانه')) regimeClass = 'regime-night';
+                else if (item.regime.includes('خودگردان آزاد')) regimeClass = 'regime-azad-self';
                 else if (item.regime.includes('پردیس') || item.regime.includes('خودگردان')) regimeClass = 'regime-campus';
                 else if (item.regime.includes('مجازی') || item.regime.includes('الکترونیکی')) regimeClass = 'regime-virtual';
+                else if (item.regime.includes('شهریه')) regimeClass = 'regime-tuition';
+                else if (item.regime.includes('آزاد')) regimeClass = 'regime-azad';
 
                 const provWithDesc = item.uniDesc ? `${item.province} • ${item.uniDesc}` : item.province;
 
@@ -1820,8 +1823,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 let regimeClass = 'regime-day';
                 if (pair.courseType && (pair.courseType.includes('دوم') || pair.courseType.includes('شبانه'))) regimeClass = 'regime-night';
+                else if (pair.courseType && pair.courseType.includes('خودگردان آزاد')) regimeClass = 'regime-azad-self';
                 else if (pair.courseType && (pair.courseType.includes('پردیس') || pair.courseType.includes('خودگردان'))) regimeClass = 'regime-campus';
                 else if (pair.courseType && (pair.courseType.includes('مجازی') || pair.courseType.includes('الکترونیکی'))) regimeClass = 'regime-virtual';
+                else if (pair.courseType && pair.courseType.includes('شهریه')) regimeClass = 'regime-tuition';
+                else if (pair.courseType && pair.courseType.includes('آزاد')) regimeClass = 'regime-azad';
 
                 const row = document.createElement('div');
                 row.className = `add-choice-row ${existingRank ? 'is-disabled' : ''} ${isCurrentlySelected ? 'is-selected' : ''}`;
@@ -2589,8 +2595,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 let regimeClass = 'regime-day';
                 if (item.regime.includes('دوم') || item.regime.includes('شبانه')) regimeClass = 'regime-night';
+                else if (item.regime.includes('خودگردان آزاد')) regimeClass = 'regime-azad-self';
                 else if (item.regime.includes('پردیس') || item.regime.includes('خودگردان')) regimeClass = 'regime-campus';
                 else if (item.regime.includes('مجازی') || item.regime.includes('الکترونیکی')) regimeClass = 'regime-virtual';
+                else if (item.regime.includes('شهریه')) regimeClass = 'regime-tuition';
+                else if (item.regime.includes('آزاد')) regimeClass = 'regime-azad';
 
                 const notesText = (item.notes || pairDetail.notes || '').trim();
 
@@ -2800,7 +2809,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         .regime-day { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
                         .regime-night { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
                         .regime-campus { background: #faf5ff; color: #7e22ce; border: 1px solid #e9d5ff; }
-                        .regime-virtual { background: #ecfeff; color: #0e7490; border: 1px solid #a5f3fc; }
+                        .regime-virtual { background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; }
+                        .regime-azad-self { background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; }
+                        .regime-tuition { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+                        .regime-azad { background: #ecfeff; color: #0e7490; border: 1px solid #a5f3fc; }
 
                         .term-mehr { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
                         .term-bahman { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }

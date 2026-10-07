@@ -311,8 +311,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             let regimeClass = 'regime-day';
             if (regime.includes('دوم') || regime.includes('شبانه')) regimeClass = 'regime-night';
+            else if (regime.includes('خودگردان آزاد')) regimeClass = 'regime-azad-self';
             else if (regime.includes('پردیس') || regime.includes('خودگردان')) regimeClass = 'regime-campus';
             else if (regime.includes('مجازی') || regime.includes('الکترونیکی')) regimeClass = 'regime-virtual';
+            else if (regime.includes('شهریه')) regimeClass = 'regime-tuition';
+            else if (regime.includes('آزاد')) regimeClass = 'regime-azad';
 
             const tr = document.createElement('tr');
             tr.innerHTML = `
