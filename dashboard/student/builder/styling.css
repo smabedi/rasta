@@ -43,7 +43,7 @@
 
 body.wizard-body {
     background-color: var(--surface-bg);
-    font-family: var(--font-sans);
+    font-family: var(--font-sans), serif;
     color: var(--text-main);
     margin: 0;
     padding: 0;
@@ -1840,6 +1840,21 @@ body.wizard-body {
     background: #fff1f2;
     color: #be123c;
     border-color: #fecdd3;
+}
+.regime-azad-self {
+    background: #eef2ff;
+    color: #4338ca;
+    border-color: #c7d2fe;
+}
+.regime-tuition {
+    background: #fff7ed;
+    color: #c2410c;
+    border-color: #fed7aa;
+}
+.regime-azad {
+    background: #ecfeff;
+    color: #0e7490;
+    border-color: #a5f3fc;
 }
 
 /* Semester Badges (مهر / بهمن) */

@@ -997,6 +997,9 @@ body.dashboard-body {
 .regime-night { background: var(--amber-50); color: var(--amber-700); }
 .regime-campus { background: #f3e8ff; color: #7e22ce; }
 .regime-virtual { background: #fff1f2; color: #be123c; }
+.regime-azad-self { background: #eef2ff; color: #4338ca; }
+.regime-tuition { background: #fff7ed; color: #c2410c; }
+.regime-azad { background: #ecfeff; color: #0e7490; }
 
 .matrix-term-badge {
     display: inline-block;
