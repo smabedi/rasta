@@ -1836,6 +1836,11 @@ body.wizard-body {
     color: #7e22ce;
     border-color: #e9d5ff;
 }
+.regime-virtual {
+    background: #fff1f2;
+    color: #be123c;
+    border-color: #fecdd3;
+}
 
 /* Semester Badges (مهر / بهمن) */
 .matrix-term-badge {

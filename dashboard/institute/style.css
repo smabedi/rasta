@@ -864,6 +864,7 @@ body.dashboard-body {
 .regime-day { background: var(--success-50); color: var(--success-700); }
 .regime-night { background: var(--amber-50); color: var(--amber-700); }
 .regime-campus { background: #f3e8ff; color: #7e22ce; }
+.regime-virtual { background: #fff1f2; color: #be123c; }
 
 .matrix-term-badge {
     display: inline-block;
@@ -933,6 +934,7 @@ body.dashboard-body {
 .regime-day { background: var(--success-50); color: var(--success-700); }
 .regime-night { background: var(--amber-50); color: var(--amber-700); }
 .regime-campus { background: #f3e8ff; color: #7e22ce; }
+.regime-virtual { background: #fff1f2; color: #be123c; }
 
 .mcdm-score-tag {
     font-feature-settings: "tnum";
