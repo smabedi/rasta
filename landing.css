@@ -219,13 +219,98 @@
     white-space: nowrap;
 }
 
-/* Mobile wrap safety for narrow viewports */
+/* ==========================================================================
+   Comprehensive Mobile & Tablet Adaptations
+   ========================================================================== */
+
+@media (max-width: 768px) {
+    /* 1. Reset desktop optical shift so the headline centers naturally on mobile */
+    .hero-title {
+        transform: none !important;
+        animation: heroElementEntrance 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.22s backwards !important;
+    }
+
+    /* 2. Compact container spacing */
+    .hero-container {
+        padding: 42px 16px 44px;
+    }
+
+    .hero-desc {
+        font-size: 0.92rem;
+        line-height: 1.75;
+        margin-bottom: 28px;
+        padding: 0 6px;
+    }
+
+    /* 3. Thumb-friendly full-width action dock */
+    .hero-actions {
+        width: 100%;
+        max-width: 340px;
+        margin-bottom: 40px;
+    }
+
+    .btn-hero-primary {
+        width: 100%;
+        height: 48px;
+        font-size: 0.98rem;
+    }
+
+    .hero-status-pill {
+        font-size: 0.78rem;
+        text-align: center;
+        justify-content: center;
+    }
+
+    /* 4. Dense metric strip: keeps all 3 counters inline without horizontal scrolling */
+    .stats-strip {
+        padding: 12px 14px;
+        gap: 10px;
+        border-radius: var(--radius-sm, 10px);
+    }
+
+    .stat-item {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .stat-number {
+        font-size: 1.25rem;
+    }
+
+    .stat-label {
+        font-size: 0.68rem;
+        line-height: 1.35;
+        text-align: center;
+    }
+
+    .stat-divider {
+        height: 24px;
+    }
+
+    /* 5. Mobile performance: scale down heavy radial glows */
+    .glow-top {
+        width: 320px;
+        height: 200px;
+        top: -60px;
+        filter: blur(80px);
+    }
+
+    .glow-bottom {
+        width: 260px;
+        height: 180px;
+        filter: blur(70px);
+        right: -50px;
+    }
+}
+
 @media (max-width: 480px) {
     .hero-badge {
         flex-wrap: wrap;
         justify-content: center;
-        padding: 8px 14px;
-        gap: 8px;
+        padding: 7px 12px;
+        gap: 6px;
+        font-size: 0.75rem;
+        margin-bottom: 20px;
     }
 
     .hero-badge-divider {
@@ -234,12 +319,13 @@
 }
 
 .hero-title {
-    font-size: clamp(2.35rem, 5vw, 3.5rem);
+    /* Responsive clamp: scales comfortably from 1.65rem on 360px screens to 3.5rem on desktop */
+    font-size: clamp(1.65rem, 6vw, 3.5rem);
     font-weight: 900;
-    line-height: 1.45;
-    margin: 0 auto 24px;
+    line-height: 1.4;
+    margin: 0 auto 20px;
     color: #0b1329;
-    transform: translateX(-32px); /* Tweak this value to nudge left (-) or right (+) */
+    transform: translateX(-32px); /* Desktop optical balance */
     animation: heroTitleEntrance 0.65s cubic-bezier(0.16, 1, 0.3, 1) 0.22s backwards;
 }
 
@@ -484,6 +570,7 @@
     inset: 0;
     background-color: rgba(15, 23, 42, 0.65);
     backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -503,6 +590,90 @@
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     border: 1px solid var(--border);
     overflow: hidden;
+    position: relative;
+}
+
+/* Mobile Bottom Sheet Transformation (<= 640px) */
+@media (max-width: 640px) {
+    .auth-modal-backdrop {
+        align-items: flex-end; /* Anchors the modal to the bottom edge */
+        padding: 0;
+    }
+
+    .auth-modal-card {
+        max-width: 100%;
+        max-height: 90dvh;
+        border-radius: 20px 20px 0 0;
+        border-bottom: none;
+        box-shadow: 0 -10px 30px rgba(15, 23, 42, 0.2);
+        animation: slideUpBottomSheet 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideUpBottomSheet {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+
+    /* Touch Drag Handle Indicator */
+    .auth-modal-card::before {
+        content: '';
+        display: block;
+        width: 38px;
+        height: 4px;
+        background-color: #cbd5e1;
+        border-radius: 999px;
+        margin: 10px auto 2px;
+        flex-shrink: 0;
+    }
+
+    .auth-card-header {
+        padding: 0.85rem 1.25rem;
+    }
+
+    .auth-title {
+        font-size: 1.05rem;
+    }
+
+    .auth-subtitle {
+        font-size: 0.78rem;
+    }
+
+    /* Scrollable Tab Bar for long Persian tab titles */
+    .auth-nav-tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+    .auth-nav-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .auth-nav-btn {
+        flex: 1 0 auto;
+        padding: 0.65rem 0.65rem;
+        font-size: 0.8rem;
+    }
+
+    .auth-pane {
+        padding: 1.15rem 1.25rem 2rem;
+    }
+
+    /* Stack dual-column form groups vertically on small mobile viewports */
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .form-row .col-6 {
+        width: 100%;
+    }
+
+    #candOtpGroup,
+    #instOtpGroup {
+        flex: none;
+        width: 100%;
+    }
 }
 
 .auth-card-header {
