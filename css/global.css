@@ -940,39 +940,68 @@ html[dir="ltr"] #rasta-progress-bar .progress-fill {
 }
 
 /* --- Universal Modern Select Dropdown Styling (RTL Native) --- */
+/* 1. Visual Skin: Applied globally to every select without forcing width/height */
 select,
 select.form-control,
-.input-select {
-    width: 100%;
-    height: 42px;
-    padding: 0.6rem 0.85rem 0.6rem 2.25rem; /* 2.25rem left padding clears the custom chevron in RTL */
+.input-select,
+.filter-select {
     font-family: inherit;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
     color: var(--text-main, #0f172a);
     background-color: var(--surface, #ffffff);
     border: 1px solid var(--border, #cbd5e1);
-    border-radius: 8px;
+    border-radius: var(--radius-sm, 8px);
     box-sizing: border-box;
     cursor: pointer;
     user-select: none;
 
-    /* Strip native browser dropdown arrows */
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
+    /* Strip native browser dropdown arrows across WebKit & Gecko */
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
 
     /* Embed custom crisp slate chevron */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: left 0.85rem center;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: left 0.85rem center !important;
+    background-size: 14px 14px !important;
+
+    /* RTL clearance: text aligns right, 2.25rem on the left guarantees no icon overlap */
+    padding-right: 0.85rem;
+    padding-left: 2.25rem !important;
 
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* 2. Form Layout Sizing: Full-height (42px) & full-width for modal & profile forms */
+.form-group select,
+.settings-form select,
+select.form-control:not(.filter-select):not(.select-compact) {
+    width: 100%;
+    height: 42px;
+    padding-top: 0.6rem;
+    padding-bottom: 0.6rem;
+}
+
+/* 3. Toolbar & Filter Sizing: Compact heights (34-36px) preserving inline/flex widths */
+.filter-dropdowns select,
+.table-toolbar select,
+.add-choice-filters select,
+select.filter-select,
+select.select-compact {
+    height: 36px;
+    font-size: 0.82rem;
+    padding-top: 0;
+    padding-bottom: 0;
+    background-position: left 0.65rem center !important;
+    padding-left: 2rem !important;
 }
 
 /* Focused State */
 select:focus,
 select.form-control:focus,
-.input-select:focus {
+.input-select:focus,
+.filter-select:focus {
     outline: none;
     border-color: var(--primary, #2563eb);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
@@ -981,8 +1010,9 @@ select.form-control:focus,
 /* Disabled State */
 select:disabled,
 select.form-control:disabled,
-.input-select:disabled {
-    background-color: #f1f5f9;
+.input-select:disabled,
+.filter-select:disabled {
+    background-color: #f1f5f9 !important;
     color: #94a3b8;
     cursor: not-allowed;
     opacity: 0.75;
@@ -990,7 +1020,8 @@ select.form-control:disabled,
 
 /* Consistent Dropdown Options Styling */
 select option,
-.input-select option {
+.input-select option,
+.filter-select option {
     background-color: #ffffff;
     color: #0f172a;
     padding: 0.5rem;
